@@ -33,3 +33,10 @@ vs_compute(DESCRIPTOR_FUNCTION, IMAGE_DIRECTORY, DESCRIPTOR_DIRECTORY);
 %       Col 2: File names
 %   N.B. Top result will be query image.
 [ compare_result ] = vs_compare(COMPARATOR_FUNCTION, DESCRIPTOR_DIRECTORY, DESCRIPTOR_FUNCTION);
+
+% Stage 3. Display results
+% Parameters:
+%  1 Matrix output by vs_compare
+%  2 Directory containing images
+%  3 Number of images to display
+vs_display(compare_result, IMAGE_DIRECTORY, 10);

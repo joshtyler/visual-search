@@ -1,0 +1,21 @@
+%% EEE3032 2016 Coursework solution
+%% Joshua Tyler Spring 2016
+%%
+%% vs_L2_Norm.m
+%% This function calculates the L2 Norm for the two arguments passed to it
+%% based upon cvpr_computedescriptors.m (c) John Collomosse 2010  (J.Collomosse@surrey.ac.uk)
+
+function [ distance ] = vs_L2_Norm( a,b )
+    
+    % The L2 Norm is the root of the sum of the squared differences
+    x = a - b;
+    
+    x = x.^2;
+    
+    x = sum(x);
+    
+    distance = sqrt(x);
+    
+    
+end
+

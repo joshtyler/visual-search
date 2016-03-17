@@ -7,8 +7,24 @@
 
 function vs_compute(compute_function, image_directory, desciptor_directory)
 
-% Create output directory if it does not alreay exist
+
+% Output directory is a subfolder named the same as the compute function
 output_directory = [desciptor_directory,'/', func2str(compute_function)];
+
+% Check if output directory is empty
+if  any(size(dir( fullfile( [output_directory, '/*.mat']) ),1))
+    action = input('Output directory contains at least 1 .mat file.\nDelete all .mat files and recalculate?\n','s');
+    if (action == 'n') || (action == 'N')
+        return;
+    elseif (action == 'y') || (action == 'Y')
+        delete (fullfile( [output_directory, '/*.mat']) );
+    else
+        fprintf('Invalid input.\n');
+        return;
+    end;
+end;
+
+% Create output directory if it does not alreay exist
 mkdir(output_directory);
 
 % Construct array of file attributes for all .bmp files

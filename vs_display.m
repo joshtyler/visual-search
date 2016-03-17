@@ -1,3 +1,10 @@
+%% EEE3032 2016 Coursework solution
+%% Joshua Tyler Spring 2016
+%%
+%% vs_display.m
+%% This program displays results as a MATLAB plot
+
+
 function vs_display( input, image_directory, no_to_disp )
 
     close all;
@@ -16,7 +23,7 @@ function vs_display( input, image_directory, no_to_disp )
         else
             str = strcat(str1,str2);
         end;
-        title(str);
+        title(str, 'Interpreter', 'none');
 
     end;
 

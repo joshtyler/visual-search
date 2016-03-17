@@ -3,7 +3,6 @@
 %%
 %% vs_L2_Norm.m
 %% This function calculates the L2 Norm for the two arguments passed to it
-%% based upon cvpr_computedescriptors.m (c) John Collomosse 2010  (J.Collomosse@surrey.ac.uk)
 
 function [ distance ] = vs_L2_Norm( a,b )
     

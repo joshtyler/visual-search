@@ -18,7 +18,7 @@ verbosity_level = 1;
 IMAGE_DIRECTORY = 'c:/cvpr/msrc_v2/images';
 DESCRIPTOR_DIRECTORY = 'c:/cvpr/computed_descriptors';
 
-DESCRIPTOR_FUNCTION = @(x)vs_compute_rgb_histogram(x,6);
+DESCRIPTOR_FUNCTION = @(x)vs_grid(x,4,4,@(x)vs_compute_rgb_histogram(x,6));
 COMPARATOR_FUNCTION = @vs_L2_norm;
 
 % Stage 1. Compute descriptors
@@ -42,11 +42,11 @@ vs_compute(DESCRIPTOR_FUNCTION, IMAGE_DIRECTORY, DESCRIPTOR_DIRECTORY, false);
 %       Col 1: Ordered distance measures
 %       Col 2: File names
 %   N.B. Top result will be query image.
-[ compare_result ] = vs_compare(COMPARATOR_FUNCTION, DESCRIPTOR_DIRECTORY, DESCRIPTOR_FUNCTION, '10_10_s');
+[ compare_result ] = vs_compare(COMPARATOR_FUNCTION, DESCRIPTOR_DIRECTORY, DESCRIPTOR_FUNCTION, '1_10_s');
 
 % Stage 3. Display results
 % Parameters:
 %  1 Matrix output by vs_compare
 %  2 Directory containing images
 %  3 Number of images to display
-vs_display(compare_result, IMAGE_DIRECTORY, 15);
+vs_display(compare_result, IMAGE_DIRECTORY, 16);

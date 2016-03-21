@@ -15,7 +15,8 @@ verbosity_level = 2;
 %2 is extended debug messages
 
 % Constants
-IMAGE_DIRECTORY = 'c:/cvpr/msrc_v2/images';
+%IMAGE_DIRECTORY = 'c:/cvpr/msrc_v2/images';
+IMAGE_DIRECTORY = 'c:/cvpr/test_imgs';
 DESCRIPTOR_DIRECTORY = 'c:/cvpr/computed_descriptors';
 
 %DESCRIPTOR_FUNCTION = @(x)vs_grid(x,4,4,@(x)vs_compute_rgb_histogram(x,6));
@@ -43,7 +44,7 @@ vs_compute(DESCRIPTOR_FUNCTION, IMAGE_DIRECTORY, DESCRIPTOR_DIRECTORY, false);
 %       Col 1: Ordered distance measures
 %       Col 2: File names
 %   N.B. Top result will be query image.
-[ compare_result ] = vs_compare(COMPARATOR_FUNCTION, DESCRIPTOR_DIRECTORY, DESCRIPTOR_FUNCTION); %, '1_1_s');
+[ compare_result ] = vs_compare(COMPARATOR_FUNCTION, DESCRIPTOR_DIRECTORY, DESCRIPTOR_FUNCTION, 'color_freq_3');
 
 % Stage 3. Display results
 % Parameters:

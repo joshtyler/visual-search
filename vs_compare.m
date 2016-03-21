@@ -52,6 +52,23 @@ result = horzcat(dists,names);
 %Sort the result in inceasing order of distance
 result = sortrows(result,1);
 
+%We might have the case that some results are exactly as good as the query.
+%This makes sure the query is top if that is the case
+cellfind = @(string)(@(cell_contents)(strcmp(string,cell_contents)));
+cells = cellfun(cellfind(file_listing(query).name),result);
+index = find(cells(:,2));
+if isempty(index)
+    error('Index not found!');
+elseif size(index) > 1
+    error('Index found multiple times!');
+end;
+%Check if weight of query is identical to top weight, and if so swap.
+if result{index,1} == result{1,1}
+    temp = result{index,2};
+    result{index,2} = result{1,2};
+    result{1,2} = temp;
+end;
+
 %Ensure that the top result is the query image
 if not( strcmp( result{1,2}, file_listing(query).name ) )
     error('Error. Top image is not query image');

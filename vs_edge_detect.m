@@ -33,12 +33,12 @@ function F = vs_edge_detect( img, compute_function )
     
     theta(mag < 0.2) = 0;
  
-
+    subplot(3,2,5);
+    imgshow(theta);
 
     F = compute_function(theta);
 
-    subplot(3,2,5);
-    imgshow(theta);
+
 
 end
 

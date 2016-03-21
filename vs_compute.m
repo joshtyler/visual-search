@@ -41,6 +41,10 @@ vprintf(1,'Found %d images. Loading.\n', length(file_listing));
 for i = 1 : length(file_listing)
 
     img = imread( [image_directory,'/', file_listing(i).name] );
+    %Force greyscale images to RGB
+    if size(img,3) == 1
+        img = cat(3,img,img,img);
+    end
     
     vprintf(2,'Computing %d of %d.\n',i,  length(file_listing));
     

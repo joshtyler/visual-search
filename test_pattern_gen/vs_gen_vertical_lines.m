@@ -1,8 +1,8 @@
-function img = vs_gen_vertical_lines(width, height)
+function img = vs_gen_vertical_lines(width, height, gap)
 
     vect = [];
     for i = 1:width
-        if mod(i, 2) == 0
+        if mod(i, gap) == 0
             vect(i) = 1;
         else
             vect(i) = 0;

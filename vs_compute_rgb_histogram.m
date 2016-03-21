@@ -6,6 +6,10 @@ function H =  vs_compute_rgb_histogram( img, Q )
 	% First, create qimg, an image where RGB are normalised in range 0 to (Q-1)
 	% We do this by dividing each pixel value by 256 (to give range 0 - just
 	% under 1) and then multiply this by Q, then drop the decimal point.
+    
+    if not( size(img,3) == 3 )
+        error('Image does not have three dimensions');
+    end;
 
 	qimg=(double(img).*255)./256;
 	qimg=floor(qimg.*Q);

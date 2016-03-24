@@ -7,8 +7,7 @@ function H = vs_compute_histogram( img, max, Q )
     end;
 
     bin_edges = linspace(0, max, Q + 1);
-	H = histogram(img(:),bin_edges);
-    H = H.Values;
+	H = histcounts(img(:),bin_edges);
     
     H = H ./ sum(H);
     

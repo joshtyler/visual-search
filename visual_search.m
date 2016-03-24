@@ -19,7 +19,12 @@ IMAGE_DIRECTORY = 'c:/cvpr/msrc_v2/images';
 %IMAGE_DIRECTORY = 'c:/cvpr/test_imgs';
 DESCRIPTOR_DIRECTORY = 'c:/cvpr/computed_descriptors';
 
-DESCRIPTOR_FUNCTION = @(x)vs_grid(x,2,2,@(x)vs_edge_detect(x,@(x)vs_compute_histogram(x,1.0,10),0.05));
+COLOR = @(x)vs_compute_rgb_histogram(x,2);
+FREQ = @(x)vs_edge_detect(x,@(x)vs_compute_histogram(x,1.0,8),0.05);
+
+COLOR_AND_FREQ = @(x)horzcat( COLOR(x), FREQ(x));
+
+DESCRIPTOR_FUNCTION = @(x)vs_grid(x,4,4, COLOR );
 COMPARATOR_FUNCTION = @vs_L2_norm;
 
 % Stage 1. Compute descriptors
@@ -50,4 +55,4 @@ vs_compute(DESCRIPTOR_FUNCTION, IMAGE_DIRECTORY, DESCRIPTOR_DIRECTORY, false);
 %  1 Matrix output by vs_compare
 %  2 Directory containing images
 %  3 Number of images to display
-vs_display(compare_result, IMAGE_DIRECTORY, 27);
+vs_display(compare_result, IMAGE_DIRECTORY, 16);

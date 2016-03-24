@@ -7,8 +7,7 @@
 
 function vs_display( input, image_directory, no_to_disp )
 
-    close all;
-    
+
     %Setup nextplot
     next_plot(no_to_disp);
     
@@ -39,7 +38,13 @@ function next_plot(init)
     
     %if we have input arguments, initialise.
     if nargin == 1
-        figure; %Create new figure
+        %If no figure exists, create a new one. Otherwise clear existing.
+        %findobj('Type','Figure','Name','Results')
+        if isempty(findall(0,'Type','Figure'))
+            figure('Name', 'Results');
+        else
+            clf;
+        end;
         noPlots = init;
         curPlot = 1;
         return; % Return as this call was just to set up the function.

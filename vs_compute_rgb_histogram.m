@@ -25,8 +25,7 @@ function H =  vs_compute_rgb_histogram( img, Q )
 	% Now we can use hist to create a histogram of Q^3 - 1 bins.
     % These bins are evenly spaced from 0 to Q^3 - 1
     bin_edges = linspace(0, (Q^3 -1), Q^3);
-	H = histogram(vals,bin_edges);
-    H = H.Values;
+	H = histcounts(vals,bin_edges);
 	% It is convenient to normalise the histogram, so the area under it sum
 	% to 1.
 	H = H ./sum(H);

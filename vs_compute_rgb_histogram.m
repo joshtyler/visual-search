@@ -22,8 +22,11 @@ function H =  vs_compute_rgb_histogram( img, Q )
 	% from these values. First, we have to reshape the 2D matrix into a long
 	% vector of values.
 	vals=reshape(bin,1,size(bin,1)*size(bin,2));
-	% Now we can use hist to create a histogram of Q^3 bins.
-	H = hist(vals,Q^3);
+	% Now we can use hist to create a histogram of Q^3 - 1 bins.
+    % These bins are evenly spaced from 0 to Q^3 - 1
+    bin_edges = linspace(0, (Q^3 -1), Q^3);
+	H = histogram(vals,bin_edges);
+    H = H.Values;
 	% It is convenient to normalise the histogram, so the area under it sum
 	% to 1.
 	H = H ./sum(H);

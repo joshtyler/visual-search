@@ -1,40 +1,47 @@
-function F = vs_edge_detect( img, compute_function )
+function F = vs_edge_detect( img, compute_function, strength )
     %Based upon lab week 1 code
-    % Modify to only return edges with a certain strength!!
     
     subplot(3,2,1);
     imgshow(img);
+    title('original image');
     
     %convert to greyscale image
     img = img(:,:,1)*0.30 + img(:,:,2)*0.59 + img(:,:,3)*0.11;
     
     subplot(3,2,2);
     imgshow(img);
+    title('greyscale image');
     
     Ky = [1 2 1 ; 0 0 0 ; -1 -2 -1];
-    Kx = [1 0 -1 ; 2 0 -2 ; 1 0 -1];
+    Kx = Ky';
     
-    dx = conv2(img, Kx, 'same');
-    dy = conv2(img, Ky, 'same');
+    dx = conv2(img, Kx, 'valid');
+    dy = conv2(img, Ky, 'valid');
     
     mag = sqrt (dx.^2 + dy.^2);
     
-    %theta = atan(dy ./ dx);
+    %atan2 is used to preserve sign information
+    %-dy is used to maintain compatability with the library function for test
+    theta = atan2(-dy, dx);
     
-    theta = atan2(dy, dx);
     
-    theta = theta ./ max(max(theta));
+    %atan2 gives results from -pi to pi. Normalise to 0 to 1
+    theta = theta + pi;
+    theta = theta ./ (2*pi);
     
     subplot(3,2,3);
     imgshow(mag);
+    title('magnitude ');
     
     subplot(3,2,4);
     imgshow(theta);
+    title('theta (raw)');
     
-    theta(mag < 0.2) = 0;
+    theta(mag < strength) = 0.5; %0.5 is the nominal '0' value as 0 is -pi
  
     subplot(3,2,5);
     imgshow(theta);
+    title('theta (only strong edges)');
 
     F = compute_function(theta);
 

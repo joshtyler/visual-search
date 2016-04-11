@@ -1,0 +1,59 @@
+
+\input{docs/preamble}
+
+
+\begin{document}
+	
+% Use lowecase letters to number non-content pages.
+\pagenumbering{roman}
+\hypersetup{pageanchor=false} %See http://tex.stackexchange.com/questions/18924/pdftex-warning-ext4-destination-with-the-same-identifier-nam-epage-1-has
+
+	
+\begin{titlepage}
+	\centering
+	{\huge\bfseries EEE3032 \\ Computer Vision and Pattern Recognition Coursework Assignment \\ Visual Search of an Image Collection \par}
+	\vspace{1cm}
+
+	\vspace{2.5cm}
+	{\Large\itshape Joshua Tyler \par}
+	\vfill
+	
+	
+	% Bottom of the page
+	{\large \today\par}
+\end{titlepage}
+
+%table of contents
+\clearpage
+% Set this group as special to make the abstract appear on the same page as the contents
+\begingroup
+\let\titlepage\relax
+\let\vfil\relax
+\let\endtitlepage\relax
+\let\clearpage\relax
+
+\begin{abstract}
+	Write this at the end!
+\end{abstract}
+
+\vspace{50pt}
+\tableofcontents
+\endgroup
+
+\clearpage %Make sure all preamble is grouped together and falls under that page numbering scheme
+
+% Start counting pages normally
+\pagenumbering{arabic}
+\hypersetup{pageanchor=true}
+
+\input{docs/body}
+
+\clearpage
+\bibliographystyle{IEEEtranN}
+\bibliography{IEEEabrv,refs/references}
+
+
+\input{docs/appendices}
+
+
+\end{document}          

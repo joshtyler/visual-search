@@ -1,0 +1,166 @@
+\chapter{Introduction} \label{sec:intro}
+
+Large databases of images exist in various fields. Indexing ans searching these using textual descriptors is generally not effective \cite[p.657]{forsyth2012}. Visual search offers an alternative to this, by allowing a user to search an image collection using an image as the query, with the aim being to return images similar to the query. This is achieved by generating and comparing numeric, vector based, image descriptors which can be treated similar to words.
+
+This report presents the implementation of such a system in \gls{matlab}. Several different methodologies will be considered, and their results compared and contrasted.
+
+In order to test the system, the Microsoft Research Cambridge Object Recognition Image Database, version 2.0 will be used. This is a freely available image database which is split into 20 rows, with each row containing similar images \cite{criminisi2004}.
+
+\section{System Design} \label{sec:sys-design}
+A common framework was used to apply generate descriptors from all of the images, compare them, and display results. This framework uses a \gls{matlab} function handle to input both the descriptor and distance measure. This method allows the core code-body to be generic, so that in order to run a different test only the external descriptor and/or distance measure functions need to be changed.
+
+A block diagram of the operation of the system is shown in Figure \ref{fig:sys-operation}.
+
+\begin{figure}[ht]
+	\centering
+	\tikzstyle{generalRect} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=black!40]
+	\tikzstyle{arrow} = [thick,->,>=stealth]
+	\begin{tikzpicture}[node distance=1cm]
+		\node (compute) [generalRect] {Compute Descriptors};
+		\node (descriptor) [generalRect, fill=white, right = of compute] {Descriptor Function};
+		\node (compare) [generalRect, below= of compute] {Compare Descriptors};
+		\node (query) [generalRect, fill=white, left = of compare, dashed] {Query Image};
+		\node (dist) [generalRect, fill=white, right = of compare] {Distance Measure};
+		\node (display) [generalRect, below= of compare, fill=white] {Display Results};
+		\node (plotPR) [generalRect, below= of display, fill=white] {\shortstack{Plot Precision-Recall Graph}};
+		
+		\draw [arrow] (compute) -- (compare);
+		\draw [arrow, <->] (compute) -- (descriptor);
+		\draw [arrow] (compare) -- (display);
+		\draw [arrow, <->] (compare) -- (dist);
+		\draw [arrow, dashed] (query) -- (compare);
+		\draw [arrow] (display) -- (plotPR);
+	\end{tikzpicture}
+	\caption{System design}
+	\label{fig:sys-operation}
+\end{figure}
+
+\subsection{Test Methodology} \label{sec:test-methodology}
+In order to test the system, a unit test has been written for all of the descriptor and distance measure functions. Each of these tests complies with \gls{matlab}'s unit testing framework, so can be executed using the \texttt{runtests} command.
+
+\subsubsection{Test pattern generation} \label{sec:test-pattern-gen}
+Some tests require test patterns in order to test their functionality correctly. For this purpose a suite of test pattern generation programs was written to create image which contain:
+\begin{itemize}
+	\item A uniform colour.
+	\item A uniform pattern.
+	\item A combination of the above.
+	\item A grid of several of the above images.
+\end{itemize}
+These test patterns can be used both internally to the unit tests, as well as to perform system level testing.
+
+\section{Techniques Implemented} \label{sec:techniques-implemented}
+This section discusses the visual search techniques implemented, along with the theory of their operation and the difficulties which were encountered whilst implementing them.
+\subsection{Global Colour Histogram} \label{sec:color-histogram}
+A global colour histogram quantises the RGB space into a series of bins. There are $Q$ bins for each dimension, and therefore $Q^3$ bins for the total image. Each pixel in the image is then sorted into the appropriate bin, and the sum of the bin totals is normalised to 1. This vector histogram, of length $Q^3$, can therefore be used to describe the image.
+
+The implementation of this function was relatively straightforward, since example code for the function had been provided \cite{collomosse2016}. The only modifications made to the code were to explicitly state the histogram bin edges. This was necessary to provide a robust descriptor since the provided code normalised the histogram to the range of the input. Therefore an image containing only values in one area of the RGB space, would appear similar to an image with uniform distribution.
+
+The unit tests for this function consist of generating images of known RGB distribution, calculating the RGB histogram by hand for these images, then comparing that to the output of the function.
+\subsection{Texture Histogram} \label{sec:texture-histogram}
+Texture is a concept in computer vision, but is difficult to define. Texture loosely corresponds to a repeating pattern of edge characteristics, examples of which would include grass pebbles, and hair \cite[p. 194]{forsyth2012}. Texture is important because it appears to be a strong indicator of object identity.
+
+The texture histogram function is implemented as the concatenation of two functions: an edge orientation function, and a histogram function. The edge orientation function returns a two dimensional array where each element contains a value corresponding to an estimate of the edge orientation at that location. This estimate is in the range $-\pi$ to $+\pi$, but is normalised to $0$ to $1$. Weak edges are set to a normalised value of 0.5, corresponding to \SI{0}{\radian}.
+
+In order to perform the edge detection, and edge angle estimation, the function uses the Sobel operator \cite{sobel2015}. The sobel operator is formed of two kernels which are convoluted with input image in order to perform edge detection in the x and y directions respectively. The kernels are defined in Equation \ref{eq:sobel-kernels}. 
+
+\begin{equation}
+	K_x = 
+	\begin{bmatrix}
+	1 & 0 & -1 \\
+	2 & 0 & -2 \\
+	1 & 0 & -1 \\
+	\end{bmatrix}
+	K_y = 
+	\begin{bmatrix}
+	1 & 2 & 1 \\
+	0 & 0 & 0 \\
+	-1 & -2 & -1 \\
+	\end{bmatrix}
+	\label{eq:sobel-kernels}
+\end{equation}
+
+The edge magnitude and angle are calculated as described in Equations \ref{eq:sobel-mag} and \ref{eq:sobel-ang} respectively. It should be noted that the operates in these equations apply on an element-by-element basis, not to the array as a whole. In addition, the $K_y$ value is inverted in order to allow the performance to match the \gls{matlab} library function \texttt{imgradient}. This allows for easier testing. The pixels with edge magnitudes above a certain threshold are passed to the histogram generation function.
+\begin{equation}
+\text{Mag} = \sqrt{{K_x}^2 + {K_y}^2}
+\label{eq:sobel-mag}
+\end{equation}
+\begin{equation}
+\theta = \atantwo(-K_y, K_x)
+\label{eq:sobel-ang}
+\end{equation}
+
+In order to test the edge detection function, the output is compared to the \gls{matlab} function \texttt{imgradient}, for several test images, plus a real image. In addition system level testing has been performed with several test images.
+\subsection{Gridding and Concatenation of Features} \label{sec:gridding-concatenation}
+Gridding of features allows descriptors to apply be considered locally to parts of an image. The implementation of this is fairly simple in \gls{matlab}. The image can be split using the native array indexing of \gls{matlab} to select a subset of the image array. The descriptor function can then be applied to each of these sub images, and the resultant descriptors concatinated into a matrix.
+
+The gridding functon is tested by feeding a gridded sample image into the function and comparing the output to a manually calculated version of what is expected. A test descriptor function, which returns the image reshaped into a vector array is used to simplify this process.
+
+\subsection{Distance Measures} \label{sec:distance-measures}
+
+In order to calculate the difference between descriptors, the L2 norm is used. This distance measure returns the square root of sum of the squares of the differences between elements of a descriptor, as defined in Equation \ref{eq:l2-norm}, where $d_i$ refers to individual differences between array elements.
+
+\begin{equation}
+	\text{Distance} = \sqrt{ \Sigma{ ({d_i}^2)} }
+	\label{eq:l2-norm}
+\end{equation}
+
+The L2 norm calculation function is tested by comparing the output of the function to manually calculated values for various test vectors.
+
+\chapter{Experimental Results} \label{sec:results}
+
+\section{Global Colour Histogram} \label{sec:global-colour-histogram-results}
+%The global colour histogram function is implemented as \texttt{H =  vs_compute_rgb_histogram( img, Q )} where \texttt{H} is the descriptor returned, \texttt{img} is the image input, and \texttt{Q} is the quantisation level for each image dimension. The descriptor is therefore of length $Q^3$, as discussed in Section \ref{sec:color-histogram}.
+
+In order to analyse the effect of quantisation level on performance, descriptors will be generated for different values of $Q$, and the performance of each analysed for a given test image.
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/9_23_s}
+		\subcaption{Query image}
+		\label{fig:colour-hist-sheep-img}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/global_colour_hist/9_23_s/pr_2.txt}{$Q=2$} \prplotadd{data/global_colour_hist/9_23_s/pr_3.txt}{$Q=3$}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_4.txt}{$Q=4$}
+		%\prplotadd{data/global_colour_hist/9_23_s/pr_5.txt}{$Q=5$}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_6.txt}{$Q=6$}
+		%\prplotadd{data/global_colour_hist/9_23_s/pr_7.txt}{$Q=7$}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_8.txt}{$Q=8$}
+		%\prplotadd{data/global_colour_hist/9_23_s/pr_9.txt}{$Q=9$}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_10.txt}{$Q=10$}
+		\prplotclose
+		\subcaption{Resultant graph}
+		\label{fig:colour-hist-sheep-graph}
+	\end{minipage}
+	\caption{Global colour histogram results for query image 9\_23\_s}
+	\label{fig:test-graph}
+\end{figure}
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/13_1_s}
+		\subcaption{Query image}
+		\label{fig:colour-hist-sheep-img}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/global_colour_hist/13_1_s/pr_2.txt}{$Q=2$} \prplotadd{data/global_colour_hist/13_1_s/pr_3.txt}{$Q=3$}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_4.txt}{$Q=4$}
+		%\prplotadd{data/global_colour_hist/13_1_s/pr_5.txt}{$Q=5$}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_6.txt}{$Q=6$}
+		%\prplotadd{data/global_colour_hist/13_1_s/pr_7.txt}{$Q=7$}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_8.txt}{$Q=8$}
+		%\prplotadd{data/global_colour_hist/13_1_s/pr_9.txt}{$Q=9$}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_10.txt}{$Q=10$}
+		\prplotclose
+		\subcaption{Resultant graph}
+		\label{fig:colour-hist-sheep-graph}
+	\end{minipage}
+	\caption{Global colour histogram results for query image 13\_1\_s}
+	\label{fig:test-graph}
+\end{figure}
+
+\chapter{Conclusion} \label{sec:conclusion}

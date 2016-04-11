@@ -34,11 +34,12 @@ else
     figure(valid_figs(1)); %Set Results figure to active
     clf;
 end;
-pure_chance_precision = precision; %Create a matrix of same dims
-pure_chance_precision(:) = num_relevant_images / size(compare_result,1);
+pure_chance_precision = num_relevant_images / size(compare_result,1);
+pure_chance_precision = [ pure_chance_precision pure_chance_precision];
+pure_chance_recall = [ 0 1 ];
 hold on;
 plot(recall, precision, 'b.-');
-plot(recall,pure_chance_precision, 'r');
+plot(pure_chance_recall,pure_chance_precision, 'r');
 xlabel('Recall');
 ylabel('Precision');
 title('P-R Graph');
@@ -53,8 +54,12 @@ if nargin > 2
     output_name = strcat(output_directory,'/',output_filename);
     file = fopen(output_name,'w');
     fprintf(file,'recall,precision,chance_precision\n');
-    out_mat = vertcat(recall, precision, pure_chance_precision);
-    fprintf(file,'%.10f,%.10f,%.10f\n',out_mat);
+    %Output main series
+    out_mat1 = vertcat(recall, precision);
+    fprintf(file,'%.10f,%.10f,\n',out_mat1);
+    %Output pure chance series
+    out_mat2 = vertcat(pure_chance_recall, pure_chance_precision);
+    fprintf(file,'%.10f,,%.10f\n',out_mat2);
 
     fclose(file);
 end

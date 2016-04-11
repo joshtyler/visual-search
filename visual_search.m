@@ -50,7 +50,7 @@ vs_compute(DESCRIPTOR_FUNCTION, IMAGE_DIRECTORY, DESCRIPTOR_DIRECTORY, false);
 %       Col 2: File names
 %       Col 3: Boolean - true if relevant.
 %   N.B. Top result will be query image.
-[ compare_result ] = vs_compare(COMPARATOR_FUNCTION, DESCRIPTOR_DIRECTORY, DESCRIPTOR_FUNCTION);%, '10_29_s');
+[ compare_result ] = vs_compare(COMPARATOR_FUNCTION, DESCRIPTOR_DIRECTORY, DESCRIPTOR_FUNCTION, '12_21_s');
 
 % Stage 3. Display results
 % Parameters:

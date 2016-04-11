@@ -5,13 +5,13 @@
 %% This program displays results as a MATLAB plot
 
 
-function vs_display( input, image_directory, no_to_disp )
+function vs_display( input, image_directory, no_results )
 
-
+    [p r] = compute_p_r(input, no_results);
     %Setup nextplot
-    next_plot(no_to_disp);
+    next_plot(no_results + 2);
     
-    for i = 1:no_to_disp
+    for i = 1:no_results + 1
         next_plot();
         img = imread( [image_directory,'/', input{i,2}(1:end-4),'.bmp'] );
         imshow(img);
@@ -23,8 +23,12 @@ function vs_display( input, image_directory, no_to_disp )
             str = strcat(str1,str2);
         end;
         title(str, 'Interpreter', 'none');
-
     end;
+    
+    p_str = strcat('P = ',num2str(p));
+    next_plot();
+    axis off;
+    text(0.5,0.5,p_str,'Color','red','Interpreter', 'none','FontSize',14);
 
 end
 
@@ -39,10 +43,11 @@ function next_plot(init)
     %if we have input arguments, initialise.
     if nargin == 1
         %If no figure exists, create a new one. Otherwise clear existing.
-        %findobj('Type','Figure','Name','Results')
-        if isempty(findall(0,'Type','Figure'))
+        valid_figs = findall(0,'Type','Figure','Name', 'Results');
+        if isempty(valid_figs)
             figure('Name', 'Results');
         else
+            figure(valid_figs(1)); %Set Results figure to active
             clf;
         end;
         noPlots = init;
@@ -60,4 +65,21 @@ function next_plot(init)
     
     curPlot = curPlot + 1;
     
+end
+
+
+function [p r] = compute_p_r(input, no_to_consider)
+    retrieved = no_to_consider;
+    category = sscanf(input{1,2}, '%d', 1);
+    
+    relevant = 0;
+    for i = 1: no_to_consider
+        if sscanf(input{(i+1),2}, '%d', 1) == category
+            relevant = relevant + 1;
+        end
+    end
+    
+    p = relevant / retrieved;
+    r = 'foo';
+
 end

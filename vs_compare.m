@@ -32,22 +32,29 @@ else
     query = floor(rand()* size(descriptors,1));
 end;
 
+query_category = sscanf(file_listing(query).name, '%d', 1);
+
 fprintf(1,'Query image is %s. (index %d)\n',file_listing(query).name(1:end-4), query );
 
 %Compute distances
 dists = [];
+relevance = [];
 vprintf(1,'Found %d descriptors. Comparing.\n', size(descriptors,1));
 for i = 1:size(descriptors,1)
     vprintf(2,'Comparing %d of %d.\n',i,  size(descriptors,1));
+    % Check if the current image is of the same catgeory as the query
+    is_relevant = ( sscanf(file_listing(i).name, '%d', 1) == query_category);
     dists = [dists; compare_function(descriptors(query,:), descriptors(i,:))];
+    relevance = [relevance;  is_relevant];
 end;
 
 
 
-%Concatinate names and dists
+%Concatinate names, dists, and relevances
 names = {file_listing.name}';
 dists = num2cell(dists);
-result = horzcat(dists,names);
+relevance = num2cell(relevance);
+result = horzcat(dists,names,relevance);
 
 %Sort the result in inceasing order of distance
 result = sortrows(result,1);
@@ -64,9 +71,9 @@ elseif size(index) > 1
 end;
 %Check if weight of query is identical to top weight, and if so swap.
 if result{index,1} == result{1,1}
-    temp = result{index,2};
-    result{index,2} = result{1,2};
-    result{1,2} = temp;
+    temp = result(index,:);
+    result(index,:) = result(1,:);
+    result(1,:) = temp;
 end;
 
 %Ensure that the top result is the query image

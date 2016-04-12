@@ -109,9 +109,9 @@ The L2 norm calculation function is tested by comparing the output of the functi
 \chapter{Experimental Results} \label{sec:results}
 
 \section{Global Colour Histogram} \label{sec:global-colour-histogram-results}
-%The global colour histogram function is implemented as \texttt{H =  vs_compute_rgb_histogram( img, Q )} where \texttt{H} is the descriptor returned, \texttt{img} is the image input, and \texttt{Q} is the quantisation level for each image dimension. The descriptor is therefore of length $Q^3$, as discussed in Section \ref{sec:color-histogram}.
+The global colour histogram function is implemented as \texttt{H =  vs\_compute\_rgb\_histogram(img, Q)} where \texttt{H} is the descriptor returned, \texttt{img} is the image input, and \texttt{Q} is the quantisation level for each image dimension. The descriptor is therefore of length $Q^3$, as discussed in Section \ref{sec:color-histogram}.
 
-In order to analyse the effect of quantisation level on performance, descriptors will be generated for different values of $Q$, and the performance of each analysed for a given test image.
+In order to analyse the effect of quantisation level on performance, descriptors have been generated for various values of $Q$, and the performance of each value analysed for each test value. Two test images have been chosen, 9\_23\_s and 13\_1\_s, and their results are displayed in Figures \ref{fig:colour-hist-sheep-graph} and \ref{fig:colour-hist-books-graph} respectively. These images have been chosen because they represent two contrasting examples of what could be presented to the algorithm. Image 9\_23\_s shows a sheep in a field. This image has two strongly dominant colours: the green of the grass, and the cream of the sheep's wool, and very little other colour content in the picture. On the other hand 13\_1\_s shows a collection of differently coloured books on a shelf. This image contains many different colours.
 
 \begin{figure}[ht]
 	\begin{minipage}[]{0.3\linewidth}
@@ -122,20 +122,148 @@ In order to analyse the effect of quantisation level on performance, descriptors
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
-		\prplot{data/global_colour_hist/9_23_s/pr_2.txt}{$Q=2$} \prplotadd{data/global_colour_hist/9_23_s/pr_3.txt}{$Q=3$}
-		\prplotadd{data/global_colour_hist/9_23_s/pr_4.txt}{$Q=4$}
-		%\prplotadd{data/global_colour_hist/9_23_s/pr_5.txt}{$Q=5$}
-		\prplotadd{data/global_colour_hist/9_23_s/pr_6.txt}{$Q=6$}
-		%\prplotadd{data/global_colour_hist/9_23_s/pr_7.txt}{$Q=7$}
-		\prplotadd{data/global_colour_hist/9_23_s/pr_8.txt}{$Q=8$}
-		%\prplotadd{data/global_colour_hist/9_23_s/pr_9.txt}{$Q=9$}
-		\prplotadd{data/global_colour_hist/9_23_s/pr_10.txt}{$Q=10$}
+		\prplot{data/global_colour_hist/9_23_s/pr_2.txt}{Q=2} \prplotadd{data/global_colour_hist/9_23_s/pr_3.txt}{Q=3}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_4.txt}{Q=4}
+		%\prplotadd{data/global_colour_hist/9_23_s/pr_5.txt}{Q=5}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_6.txt}{Q=6}
+		%\prplotadd{data/global_colour_hist/9_23_s/pr_7.txt}{Q=7}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_8.txt}{Q=8}
+		%\prplotadd{data/global_colour_hist/9_23_s/pr_9.txt}{Q=9}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_10.txt}{Q=10}
 		\prplotclose
 		\subcaption{Resultant graph}
-		\label{fig:colour-hist-sheep-graph}
+		\label{fig:colour-hist-sheep}
 	\end{minipage}
 	\caption{Global colour histogram results for query image 9\_23\_s}
-	\label{fig:test-graph}
+	\label{fig:colour-hist-sheep-graph}
+\end{figure}
+
+The results shown in Figures \ref{fig:colour-hist-sheep-graph} and \ref{fig:colour-hist-books-graph} match expectations suggesting that a very low quantisation value does not deliver good results, because there are not enough bins to differentiate between the images. In addition very high values, such as $Q=10$ do not work well because there is two many possible bins, and as such nominally similar colours will be sorted into different bins, and so will not be considered similar by the distance measure function. Both test images suggest that a quantisation level of $Q=4$, yielding $64$ bins, gives the best result, since the line joining these data points is closest to the top right hand corner.
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/13_1_s}
+		\subcaption{Query image}
+		\label{fig:colour-hist-books-img}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/global_colour_hist/13_1_s/pr_2.txt}{Q=2} \prplotadd{data/global_colour_hist/13_1_s/pr_3.txt}{Q=3}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_4.txt}{Q=4}
+		%\prplotadd{data/global_colour_hist/13_1_s/pr_5.txt}{Q=5}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_6.txt}{Q=6}
+		%\prplotadd{data/global_colour_hist/13_1_s/pr_7.txt}{Q=$}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_8.txt}{Q=8}
+		%\prplotadd{data/global_colour_hist/13_1_s/pr_9.txt}{Q=9}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_10.txt}{Q=10}
+		\prplotclose
+		\subcaption{Resultant graph}
+		\label{fig:colour-hist-books-graph}
+	\end{minipage}
+	\caption{Global colour histogram results for query image 13\_1\_s}
+	\label{fig:colour-hist-books}
+\end{figure}
+
+\FloatBarrier
+\section{Gridding} \label{sec:gridding-results}
+Gridding is implemented as the function \texttt{F = vs\_grid(img, h\_level, v\_level, compute\_function)}, where \texttt{img} is the image input, \texttt{h\_level} is the horizontal quantisation level, \texttt{v\_level} is the vertical quantisation level and \texttt{compute\_function} is the descriptor generation function. This configuration therefore gives us two independent variables, \texttt{h\_level} and \texttt{v\_level}.
+
+However, since most of the images in the dataset have a quantisation level of approximately 1.5:1, it makes sense to set the vertical quantisation level to 1.5 times the horizontal quantisation level. Therefore the overall quantisation level, $Q$ can be defined, where \texttt{h\_level = ceil(1.5*Q)}, and \texttt{v\_level = Q}.
+
+In a similar manner to that of Section \ref{sec:global-colour-histogram-results} the optimum quantisation factor will be determined by computing descriptors for various values of $Q$ and then, using two test images, determining which has best results. For this test, the value of $Q$ for the global colour histogram which prodced the best results ($Q=4$) will be used. The same test images as used in Section \ref{sec:global-colour-histogram-results} have also been maintained in order to allow a performance comparison with the non-gridded image.
+
+The same effect of increasing Quantisation factor as experienced with the global colour histogram is expected. Increasing the value should increase performance up to a maximum, at this point the performance should decrease with increasing quantisation factor. One reason for this is that tighter grids mean that small movements in the object could potentially result in the image being quantised in a very different way, meaning visually similar images would be distant from each other in the quantised space.
+
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/9_23_s}
+		\subcaption{Query image}
+		\label{fig:grid-color-sheep-img}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/gridding/color_hist/9_23_s/pr_1.txt}{Q=1}
+		\prplotadd{data/gridding/color_hist/9_23_s/pr_2.txt}{Q=2}
+		\prplotadd{data/gridding/color_hist/9_23_s/pr_3.txt}{Q=3}
+		\prplotadd{data/gridding/color_hist/9_23_s/pr_4.txt}{Q=4}
+		\prplotadd{data/gridding/color_hist/9_23_s/pr_8.txt}{Q=8}
+		\prplotadd{data/gridding/color_hist/9_23_s/pr_15.txt}{Q=15}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_4.txt}{No grid}
+
+		\prplotclose
+		\subcaption{Resultant graph}
+		\label{fig:grid-color-sheep-graph}
+	\end{minipage}
+	\caption{Gridded global colour histogram results for query image 9\_23\_s}
+	\label{fig:grid-color-sheep}
+\end{figure}
+
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/13_1_s}
+		\subcaption{Query image}
+		\label{fig:grid-color-books-img}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/gridding/color_hist/13_1_s/pr_1.txt}{Q=1}
+		\prplotadd{data/gridding/color_hist/13_1_s/pr_2.txt}{Q=2}
+		\prplotadd{data/gridding/color_hist/13_1_s/pr_3.txt}{Q=3}
+		\prplotadd{data/gridding/color_hist/13_1_s/pr_4.txt}{Q=4}
+		\prplotadd{data/gridding/color_hist/13_1_s/pr_8.txt}{Q=8}
+		\prplotadd{data/gridding/color_hist/13_1_s/pr_15.txt}{Q=15}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_4.txt}{No grid}
+		
+		\prplotclose
+		\subcaption{Resultant graph}
+		\label{fig:grid-color-books-graph}
+	\end{minipage}
+	\caption{Gridded global colour histogram results for query image 13\_1\_s}
+	\label{fig:grid-color-books}
+\end{figure}
+
+Figures \ref{fig:grid-color-sheep} and \ref{fig:grid-color-books} show the results of the gridding process.
+
+Figure \ref{fig:grid-color-sheep} shows little variation across gridding quantisation levels, this is likely due to the fact that the image has only two dominant colours, so all grids have similar colour histograms. Gridding does in the general case show slight performance improvement with this image however. Notably increasing prevision values for higher quantisation levels.
+
+Figure \ref{fig:grid-color-books} on the other hand shows great variation in the result with grid size. Increasing the grid quantisation level to 2 greatly increases the performance up to a recall of around 0.4, and a grid quantisation level of 1 also increases the performance by a large amount also. In addition to this, much higher quantisation steps, such as 8 and 15 show greatly decreased performance. This is due to reasons mentioned previously.
+
+
+\FloatBarrier
+\section{Texture Histogram} \label{sec:texture-histogram-results}
+The edge orientation function is implemented as \texttt{F = vs\_edge\_detect(img, compute\_function, strength)} where \texttt{F} is the descriptor returned, \texttt{img} is the image input, \texttt{compute\_function} is the histogram generation function, and \texttt{strength} is the minimum edge strength to consider (range 0--1). The histogram generation function is \texttt{H = vs\_compute\_histogram(img, Q)} where \texttt{H} is the histogram returned, \texttt{img} is the image input and \texttt{Q} is the quantisation factor. When \texttt{vs\_compute\_histogram} is used as the \texttt{compute\_function} in \texttt{vs\_edge\_detect}, the system can produce an edge orientation histogram, with two independent parameters. These parameters determine the minimum strength edge to consider, as well as the quantisation level of the histogram. These parameters will be referred to as $E$ and $Q$ respectively.
+
+Additionally, since texture is an inherently local feature, the image will be gridded. The descriptor function handle is therefore : \texttt{@(x)vs\_grid(x,3,2, @(x)vs\_edge\_detect(x, @(x)vs\_compute\_histogram(x,Q),E))}. The grid quantisation factor of $Q=2$ is used, since this was determined to be the most effective for gridding the RGB histogram in Section \ref{sec:gridding-results}.
+
+Evaluating the effect of changing both $E$ and $Q$ together is computationally expesive, and the results are hard to visualise, since a 3 axis plot would be required. Therefore the two variables will be evaluated separately.
+
+Initially the effect of changing the histogram quantisation level, $Q$, will be investigated using a constant $E$ of 0. This will leave all edges in the image for the consideration of the histogram
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/9_23_s}
+		\subcaption{Query image}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/grid_text_hist/E_0/9_23_s/pr_4.txt}{Q=4}
+		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_8.txt}{Q=8}
+		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_10.txt}{Q=10}
+		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_12.txt}{Q=12}
+		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_15.txt}{Q=16}
+		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_18.txt}{Q=18}
+		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_20.txt}{Q=20}
+		\prplotclose
+		\subcaption{Resultant graph}
+	\end{minipage}
+	\caption{Gridded texture histogram results for query image 9\_23\_s, with $E=0$}
+	\label{fig:grid-text-sheep}
 \end{figure}
 
 \begin{figure}[ht]
@@ -143,24 +271,81 @@ In order to analyse the effect of quantisation level on performance, descriptors
 		\centering
 		\includegraphics[width = 0.9\linewidth]{figs/msrc/13_1_s}
 		\subcaption{Query image}
-		\label{fig:colour-hist-sheep-img}
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
-		\prplot{data/global_colour_hist/13_1_s/pr_2.txt}{$Q=2$} \prplotadd{data/global_colour_hist/13_1_s/pr_3.txt}{$Q=3$}
-		\prplotadd{data/global_colour_hist/13_1_s/pr_4.txt}{$Q=4$}
-		%\prplotadd{data/global_colour_hist/13_1_s/pr_5.txt}{$Q=5$}
-		\prplotadd{data/global_colour_hist/13_1_s/pr_6.txt}{$Q=6$}
-		%\prplotadd{data/global_colour_hist/13_1_s/pr_7.txt}{$Q=7$}
-		\prplotadd{data/global_colour_hist/13_1_s/pr_8.txt}{$Q=8$}
-		%\prplotadd{data/global_colour_hist/13_1_s/pr_9.txt}{$Q=9$}
-		\prplotadd{data/global_colour_hist/13_1_s/pr_10.txt}{$Q=10$}
+		\prplot{data/grid_text_hist/E_0/13_1_s/pr_4.txt}{Q=4}
+		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_8.txt}{Q=8}
+		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_10.txt}{Q=10}
+		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_12.txt}{Q=12}
+		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_15.txt}{Q=16}
+		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_18.txt}{Q=18}
+		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_20.txt}{Q=20}
 		\prplotclose
 		\subcaption{Resultant graph}
-		\label{fig:colour-hist-sheep-graph}
 	\end{minipage}
-	\caption{Global colour histogram results for query image 13\_1\_s}
-	\label{fig:test-graph}
+	\caption{Gridded texture histogram results for query image 13\_1\_s, with $E=0$}
+	\label{fig:grid-text-books}
 \end{figure}
+
+Figure \ref{fig:grid-text-sheep} shows that for the sheep image, there is very little difference in performance with quantisation levels greater than approximately 4. Figure \ref{fig:grid-text-books} shows that the books, on the other hand, performance is dependant on quantisation level. Higher quantisation levels continue to improve performance, up to approximately $Q=16$, after this point performance decreases.
+
+Figures \ref{fig:grid-text-sheep-q16} and \ref{fig:grid-text-books-q16} show the result of varying $E$, whilst keeping $Q$ at a constant value of $16$.
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/9_23_s}
+		\subcaption{Query image}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/grid_text_hist/Q_16/9_23_s/pr_0.txt}{E=0}
+		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_1.txt}{E=0.1}
+		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_2.txt}{E=0.2}
+		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_3.txt}{E=0.3}
+%		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_4.txt}{E=0.4}
+		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_5.txt}{E=0.5}
+%		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_6.txt}{E=0.6}
+		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_7.txt}{E=0.7}
+%		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_8.txt}{E=0.8}
+		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_9.txt}{E=0.9}
+%		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_10.txt}{E=1.0}
+		\prplotclose
+		\subcaption{Resultant graph}
+	\end{minipage}
+	\caption{Gridded texture histogram results for query image 9\_23\_s, with $Q=16$}
+	\label{fig:grid-text-sheep-q16}
+\end{figure}
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/13_1_s}
+		\subcaption{Query image}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/grid_text_hist/Q_16/13_1_s/pr_0.txt}{E=0}
+		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_1.txt}{E=0.1}
+		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_2.txt}{E=0.2}
+		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_3.txt}{E=0.3}
+%		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_4.txt}{E=0.4}
+		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_5.txt}{E=0.5}
+%		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_6.txt}{E=0.6}
+		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_7.txt}{E=0.7}
+%		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_8.txt}{E=0.8}
+		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_9.txt}{E=0.9}
+%		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_10.txt}{E=1.0}
+		\prplotclose
+		\subcaption{Resultant graph}
+	\end{minipage}
+	\caption{Gridded texture histogram results for query image 13\_1\_s, with $Q=16$}
+	\label{fig:grid-text-books-q16}
+\end{figure}
+
+\FloatBarrier
+\section{Concatenation of Descriptors} \label{sec:conc-desc-results}
+
 
 \chapter{Conclusion} \label{sec:conclusion}

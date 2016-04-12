@@ -3,5 +3,61 @@
 	\chapter{Foo \label{app:foo}}
 	Placeholder
 	
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/4_12_s}
+		\subcaption{Query image}
+		\label{fig:text-hist-bike-img}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/gridding/color_hist/4_12_s/pr_2.txt}{Q=2} \prplotadd{data/gridding/color_hist/4_12_s/pr_3.txt}{Q=3}
+		\prplotadd{data/gridding/color_hist/4_12_s/pr_4.txt}{Q=4}
+		%\prplotadd{data/gridding/color_hist/4_12_s/pr_5.txt}{Q=5}
+		\prplotadd{data/gridding/color_hist/4_12_s/pr_6.txt}{Q=6}
+		%\prplotadd{data/gridding/color_hist/4_12_s/pr_7.txt}{Q=$}
+		\prplotadd{data/gridding/color_hist/4_12_s/pr_8.txt}{Q=8}
+		%\prplotadd{data/gridding/color_hist/4_12_s/pr_9.txt}{Q=9}
+		\prplotadd{data/gridding/color_hist/4_12_s/pr_10.txt}{Q=10}
+		\prplotclose
+		\subcaption{Resultant graph}
+		\label{fig:text-hist-bike-graph}
+	\end{minipage}
+	\caption{Gridded global colour histogram results for query image 4\_12\_s}
+	\label{fig:text-hist-bike}
+\end{figure}
+
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/8_7_s}
+		\subcaption{Query image}
+		\label{fig:text-hist-bike-img}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/global_text_hist/8_7_s/pr_2.txt}{Q=2} \prplotadd{data/global_text_hist/8_7_s/pr_3.txt}{Q=3}
+		\prplotadd{data/global_text_hist/8_7_s/pr_4.txt}{Q=4}
+		%\prplotadd{data/global_text_hist/8_7_s/pr_5.txt}{Q=5}
+		\prplotadd{data/global_text_hist/8_7_s/pr_6.txt}{Q=6}
+		%\prplotadd{data/global_text_hist/8_7_s/pr_7.txt}{Q=$}
+		\prplotadd{data/global_text_hist/8_7_s/pr_8.txt}{Q=8}
+		%\prplotadd{data/global_text_hist/8_7_s/pr_9.txt}{Q=9}
+		\prplotadd{data/global_text_hist/8_7_s/pr_10.txt}{Q=10}
+		\prplotadd{data/global_text_hist/8_7_s/pr_12.txt}{Q=12}
+		\prplotadd{data/global_text_hist/8_7_s/pr_14.txt}{Q=14}
+		\prplotadd{data/global_text_hist/8_7_s/pr_16.txt}{Q=16}
+		\prplotadd{data/global_text_hist/8_7_s/pr_18.txt}{Q=18}
+		\prplotadd{data/global_text_hist/8_7_s/pr_20.txt}{Q=20}
+		\prplotclose
+		\subcaption{Resultant graph}
+		\label{fig:text-hist-bike-graph}
+	\end{minipage}
+	\caption{Global texture histogram (NO GRIDDING) results for query image 8\_7\_s}
+	\label{fig:text-hist-bike}
+\end{figure}
+	
 
 \end{appendices}

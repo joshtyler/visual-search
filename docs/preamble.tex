@@ -49,11 +49,14 @@
 %Spec says 11pt Arial;
 \usepackage{fontspec}
 \setmainfont{Arial}
-%\setmathrm{Arial}
-%\setmathsf{Arial}
-%\setmathtt{Arial}
-%\setboldmathrm[BoldFont={Optima ExtraBlack}]{Optima Bold}
-%Note: italic math font is not set!
+%\usepackage{mathspec}
+%\setmathsfont(Digits)[Numbers={Lining,Proportional}]{Arial}
+%\setmathsfont(Latin)[Numbers={Lining,Proportional}]{Arial}
+%\setmathsfont(Greek)[Numbers={Lining,Proportional}]{Arial}
+
+%\usepackage[math-style=upright]{unicode-math}
+%\setmathfont{Arial}
+%\setmathfont[range={\sqrt,\int}]{XITS Math}
 
 %For checking font size
 \makeatletter
@@ -145,8 +148,10 @@
 %Allow easy typesetting of SI units
 \usepackage{siunitx}
 
+%Allow floatbarrier
+\usepackage{placeins}
 
-%User commands
+%Custom commands
 
 %Create new P-R plot
 \newcommand{\prplot}[2]
@@ -164,20 +169,20 @@
 	axis lines=left, % Don't put lines on right and top
 	%
 	width=0.9\columnwidth,
-	height = 0.7\columnwidth,
+	height = 0.6\columnwidth,
 	%
 	xtick={0,0.1,...,1.1},
 	xmajorgrids=true,
 	ytick={0,0.1,...,1.1},
 	ymajorgrids=true,
 	cycle list name=exotic,
-	legend style ={anchor=north east,legend cell align=left,at={(0.95,0.95)}},
+	legend style ={anchor=north east,legend cell align=left,at={(1,1)}},
 	]
 	
 	%Note: pure chance precision will be for  plot 1 only
 	\addplot+[mark=none]
 	table[ x=recall, y=chance_precision, col sep=comma] {#1};
-	\addlegendentry{Pure chance precision};
+	\addlegendentry{\shortstack[l]{Chance}};
 	
 	\addplot
 	table[ x=recall, y=precision, col sep=comma] {#1};

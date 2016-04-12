@@ -34,7 +34,7 @@ end;
 
 query_category = sscanf(file_listing(query).name, '%d', 1);
 
-fprintf(1,'Query image is %s. (index %d)\n',file_listing(query).name(1:end-4), query );
+vprintf(1,'Query image is %s. (index %d)\n',file_listing(query).name(1:end-4), query );
 
 %Compute distances
 dists = [];

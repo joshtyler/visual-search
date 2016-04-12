@@ -13,10 +13,10 @@ if  any(size(dir( fullfile( [output_directory, '/*.mat']) ),1))
         action = input('Output directory contains at least 1 .mat file.\nDelete all .mat files and recalculate?\n','s');
     elseif prompt == 'i'
         action = 'n';
-        warning('Descriptors already exist. Not overwriting.');
+        vprintf(1,'Descriptors already exist. Not overwriting.\n');
     elseif prompt == 'o'
         action = 'y';
-        warning('Descriptors already exist. Overwriting.');
+        vprintf(1,'Descriptors already exist. Overwriting.\n');
     else
         error('Invalid prompt option');
     end;

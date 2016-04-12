@@ -1,4 +1,4 @@
-function  vs_compute_pr( compare_result, output_directory, output_filename )
+function  vs_compute_pr( compare_result, display, output_directory, output_filename )
 
 %Remove query image from results
 compare_result = compare_result( 2:end , :);
@@ -26,27 +26,31 @@ precision = (1: num_relevant_images) ./ valid_locations;
 % Recall is simply the percentage of the total number of relevant images returned at any point
 recall = (1: num_relevant_images) ./ num_relevant_images;
 
-%If no figure exists, create a new one. Otherwise clear existing.
-valid_figs = findall(0,'Type','Figure','Name', 'P-R Graph');
-if isempty(valid_figs)
-    figure('Name', 'P-R Graph');
-else
-    figure(valid_figs(1)); %Set Results figure to active
-    clf;
-end;
+%Calculate pure chance stats
 pure_chance_precision = num_relevant_images / size(compare_result,1);
 pure_chance_precision = [ pure_chance_precision pure_chance_precision];
 pure_chance_recall = [ 0 1 ];
-hold on;
-plot(recall, precision, 'b.-');
-plot(pure_chance_recall,pure_chance_precision, 'r');
-xlabel('Recall');
-ylabel('Precision');
-title('P-R Graph');
-axis([0 1 0 1.05]); %// Adjust axes for better viewing
-grid;
 
-if nargin > 2
+if display == true
+    %If no figure exists, create a new one. Otherwise clear existing.
+    valid_figs = findall(0,'Type','Figure','Name', 'P-R Graph');
+    if isempty(valid_figs)
+        figure('Name', 'P-R Graph');
+    else
+        figure(valid_figs(1)); %Set Results figure to active
+        clf;
+    end;
+    hold on;
+    plot(recall, precision, 'b.-');
+    plot(pure_chance_recall,pure_chance_precision, 'r');
+    xlabel('Recall');
+    ylabel('Precision');
+    title('P-R Graph');
+    axis([0 1 0 1.05]); %// Adjust axes for better viewing
+    grid;
+end
+
+if nargin > 3
     % Create output directory if it does not alreay exist
     if not(exist(output_directory, 'dir'))
         mkdir(output_directory);

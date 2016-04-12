@@ -15,7 +15,7 @@ function vs_display( input, image_directory, no_results )
         next_plot();
         img = imread( [image_directory,'/', input{i,2}(1:end-4),'.bmp'] );
         imshow(img);
-        str1 = sprintf('Result %d',i);
+        str1 = sprintf('Result %d',i-1);
         str2 = sprintf('\nDistance %f File: %s\n',input{i,1},input{i,2});
         if i == 1
             str = strcat(str1,'(Query Image)',str2);

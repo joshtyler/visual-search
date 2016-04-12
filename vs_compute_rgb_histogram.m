@@ -23,8 +23,11 @@ function H =  vs_compute_rgb_histogram( img, Q )
 	% vector of values.
 	vals=reshape(bin,1,size(bin,1)*size(bin,2));
 	% Now we can use hist to create a histogram of Q^3 - 1 bins.
+    
     % These bins are evenly spaced from 0 to Q^3 - 1
-    bin_edges = linspace(0, (Q^3 -1), Q^3);
+    % The value X(i) is in the kth bin if edges(k) ? X(i) < edges(k+1)
+    % I.e. 0 goes into the first bin, 1 the second bin
+    bin_edges = linspace(0, Q^3, Q^3 + 1);
 	H = histcounts(vals,bin_edges);
 	% It is convenient to normalise the histogram, so the area under it sum
 	% to 1.

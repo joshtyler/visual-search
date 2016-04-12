@@ -5,19 +5,20 @@
 %% This function calls the descriptor generator function passed to it for each image in the dataset.
 %% based upon cvpr_computedescriptors.m (c) John Collomosse 2010  (J.Collomosse@surrey.ac.uk)
 
-function vs_compute(compute_function, image_directory, desciptor_directory, prompt)
-
-
-% Output directory is a subfolder named the same as the compute function
-output_directory = [desciptor_directory,'/', func2str(compute_function)];
+function vs_compute(compute_function, image_directory, output_directory, prompt)
 
 % Check if output directory is empty
 if  any(size(dir( fullfile( [output_directory, '/*.mat']) ),1))
-    if prompt
+    if prompt == 'p'
         action = input('Output directory contains at least 1 .mat file.\nDelete all .mat files and recalculate?\n','s');
-    else
+    elseif prompt == 'i'
         action = 'n';
         warning('Descriptors already exist. Not overwriting.');
+    elseif prompt == 'o'
+        action = 'y';
+        warning('Descriptors already exist. Overwriting.');
+    else
+        error('Invalid prompt option');
     end;
     if (action == 'n') || (action == 'N')
         return;

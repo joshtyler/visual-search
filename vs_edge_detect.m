@@ -19,6 +19,7 @@ function F = vs_edge_detect( img, compute_function, strength )
     dy = conv2(img, Ky, 'valid');
     
     mag = sqrt (dx.^2 + dy.^2);
+    mag = mag ./ max(max(mag)); %Normalise to 0 - 1
     
     %atan2 is used to preserve sign information
     %-dy is used to maintain compatability with the library function for test
@@ -37,7 +38,7 @@ function F = vs_edge_detect( img, compute_function, strength )
  %   imgshow(theta);
  %   title('theta (raw)');
     
-    theta(mag < strength) = 0.5; %0.5 is the nominal '0' value as 0 is -pi
+    theta(mag <= strength) = 0.5; %0.5 is the nominal '0' value as 0 is -pi
  
  %   subplot(3,2,5);
   %  imgshow(theta);

@@ -5,23 +5,23 @@
 %% This function calls the comparator generator function passed to it for each descriptor, to calcluate the distance from a random query descriptor.
 %% based upon cvpr_visualsearch.m (c) John Collomosse 2010  (J.Collomosse@surrey.ac.uk)
 
-function [ result ] = vs_compare(compare_function, desciptor_directory, desciptor_function, query_name)
+function [ result ] = vs_compare(compare_function, desciptor_directory, query_name)
 
 % Construct array of file attributes for all .mat files in relevant directory
-file_listing = dir( fullfile([desciptor_directory, '/', func2str(desciptor_function),'/*.mat']) );
+file_listing = dir( fullfile([desciptor_directory, '/*.mat']) );
 
 %Load all descriptors
 descriptors=[];
 vprintf(1,'Found %d files. Loading.\n', length(file_listing));
 for i = 1 : length(file_listing)
     vprintf(2,'Loading %d of %d.\n',i,  length(file_listing));
-    load([desciptor_directory, '/', func2str(desciptor_function), '/',file_listing(i).name],'desc');
+    load([desciptor_directory, '/', file_listing(i).name],'desc');
     descriptors = [descriptors ; desc];
 end
 
 %Select the index of the query image
 %Find input string if provided, otherwise choose random
-if nargin > 3
+if nargin > 2
     str = strcat(query_name,'.mat');
     query = find(strcmp({file_listing.name}, str)==1);
     

@@ -96,12 +96,40 @@ color_func = @(x)vs_grid(x,3,2, @(x)vs_compute_rgb_histogram(x,4) );
 for query_image = {'9_23_s' , '13_1_s'}
     fprintf('Query image: %s. Begin: ', query_image{1});
     output_folder = strcat('concat/',query_image{1});
-    for looper = {'equal', 'text_weight'}
+    for i = [ 0.1:0.1:1  1.5 2 3 4 8 10 20]
+        fprintf('%f ', i);
+        descriptor_func = @(x)horzcat( texture_func(x) .* i, color_func(x));
+        vs_visual_search(output_folder, descriptor_folder, descriptor_func, comparator_func, false, query_image{1},num2str(i));
+    end
+    fprintf('\n');
+end
+
+disp('Finished calculating concatenation');
+
+%% Distance measures
+
+disp('Calculating distance measures');
+comparator_func = @vs_L2_norm;
+descriptor_folder = 'DIST_';
+
+%texture_func = @(x)vs_grid(x,3,2, @(x)vs_edge_detect(x,@(x)vs_compute_histogram(x,16),0) );
+%color_func = @(x)vs_grid(x,3,2, @(x)vs_compute_rgb_histogram(x,4) );
+%descriptor_func = @(x)horzcat( texture_func(x) .* 4, color_func(x));
+descriptor_func = @(x)vs_grid(x,3,2, @(x)vs_compute_rgb_histogram(x,4) );
+
+for query_image = {'9_23_s' , '13_1_s'}
+    fprintf('Query image: %s. Begin: ', query_image{1});
+    output_folder = strcat('dist_measure/',query_image{1});
+    for looper = {'L1', 'L2', 'L2_sq', 'L_Inf'}
         fprintf('%s ', looper{1});
-        if strcmp(looper{1},'equal')
-            descriptor_func = @(x)horzcat( texture_func(x), color_func(x));
-        elseif strcmp(looper{1},'text_weight')
-            descriptor_func = @(x)horzcat( texture_func(x) .* 2, color_func(x));
+        if strcmp(looper{1},'L1')
+            comparator_func = @vs_L1_norm;
+        elseif strcmp(looper{1},'L2')
+            comparator_func = @vs_L2_norm;
+        elseif strcmp(looper{1},'L2_sq')
+            comparator_func = @vs_L2_norm_squared;
+        elseif strcmp(looper{1},'L_Inf')
+            comparator_func = @vs_L_Inf_norm;
         else
             error('Invalid looper option');
         end
@@ -110,4 +138,4 @@ for query_image = {'9_23_s' , '13_1_s'}
     fprintf('\n');
 end
 
-disp('Finished calculating concatenation');
+disp('Finished calculating distance measures');

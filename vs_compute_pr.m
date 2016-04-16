@@ -10,9 +10,11 @@ vprintf(1,'Found %d relevant images.\n',num_relevant_images);
 
 %Create a matrix containing the indices of the valid images.
 valid_locations = [];
+valid_dists = [];
 for i = 1:size(compare_result,1)
     if compare_result{i,3} == 1
         valid_locations = [ valid_locations , i];
+        valid_dists = [ valid_dists, compare_result{i,1} ];
     end
 end
 
@@ -57,13 +59,13 @@ if nargin > 3
     end;
     output_name = strcat(output_directory,'/',output_filename);
     file = fopen(output_name,'w');
-    fprintf(file,'recall,precision,chance_precision\n');
+    fprintf(file,'recall,precision,chance_precision,dist\n');
     %Output main series
-    out_mat1 = vertcat(recall, precision);
-    fprintf(file,'%.10f,%.10f,\n',out_mat1);
+    out_mat1 = vertcat(recall, precision, valid_dists);
+    fprintf(file,'%.10f,%.10f,,%.10f\n',out_mat1);
     %Output pure chance series
     out_mat2 = vertcat(pure_chance_recall, pure_chance_precision);
-    fprintf(file,'%.10f,,%.10f\n',out_mat2);
+    fprintf(file,'%.10f,,%.10f,\n',out_mat2);
 
     fclose(file);
 end

@@ -290,7 +290,6 @@ Initially the effect of changing the histogram quantisation level, $Q$, will be 
 
 Figure \ref{fig:grid-text-sheep} shows that for the sheep image, there is very little difference in performance with quantisation levels greater than approximately 4. Figure \ref{fig:grid-text-books} shows that the books, on the other hand, performance is dependant on quantisation level. Higher quantisation levels continue to improve performance, up to approximately $Q=16$, after this point performance decreases.
 
-Figures \ref{fig:grid-text-sheep-q16} and \ref{fig:grid-text-books-q16} show the result of varying $E$, whilst keeping $Q$ at a constant value of $16$.
 
 \begin{figure}[ht]
 	\begin{minipage}[]{0.3\linewidth}
@@ -344,8 +343,56 @@ Figures \ref{fig:grid-text-sheep-q16} and \ref{fig:grid-text-books-q16} show the
 	\label{fig:grid-text-books-q16}
 \end{figure}
 
+Figures \ref{fig:grid-text-sheep-q16} and \ref{fig:grid-text-books-q16} show the result of varying $E$, whilst keeping $Q$ at a constant value of $16$. The results are interesting. For the bookshelves, increasing $E$ above zero improves performance up to approximately $E=0.3$, however, for the sheep increasing $E$ above $0$ greatly hinders performance. This is likely due to the face that whilst the books have lots of strong edges (at the edges of the books), which will remain with increasing values of $E$, the sheep image likely lacks these strong edges, and so increasing $E$ removes almost all of the relevant edges from the generated descriptor.
+
 \FloatBarrier
 \section{Concatenation of Descriptors} \label{sec:conc-desc-results}
+Sections \ref{sec:gridding-results} and \ref{sec:texture-histogram-results} demonstrate the effectiveness of gridded colour histogram and texture descriptors. It stands to reason therefore that these descriptors could be combined to produce a descriptor of even greater effectiveness. This is possible in matlab using the native array indexing interface, but it is clearer to use the \texttt{horzcat} function.
 
+A combined descriptor can therefore be invoked using the function handle \texttt{@(x)horzcat( texture\_func(x) .* M, color\_func(x))} where \texttt{texture\_func(x)} and \texttt{color\_func(x)} are function handles to the texture and colour descriptor functions respectively, where their single parameter, \texttt{x} is the input image. The only other parameter in this function is \texttt{M}. \texttt{M} is a multiplier in order to adjust the weighting between the texture and colour descriptors. When \texttt{M} is $1$ the two descriptors are equally weighted, however since the colour descriptor is 4 times as long as the texture descriptor (a 64 bin histogram, vs and 8 bit histogram), it is effectively weighted more highly since there are many more dimensions in which values can be distant. Whilst weighting of $M=4$ should therefore make up for this difference in descriptor length, a different value may provide better results.
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/9_23_s}
+		\subcaption{Query image}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/grid_text_hist/Q_16/9_23_s/pr_0.txt}{Texture only}
+		\prplotadd{data/gridding/color_hist/9_23_s/pr_2.txt}{Colour only}
+		\prplotadd{data/concat/9_23_s/pr_1.txt}{W = 1}
+		\prplotadd{data/concat/9_23_s/pr_4.txt}{W = 4}
+		\prplotadd{data/concat/9_23_s/pr_10.txt}{W = 10}
+		\prplotclose
+		\subcaption{Resultant graph}
+	\end{minipage}
+	\caption{Concatenated descriptor results for query image 9\_23\_s}
+	\label{fig:concat-sheep}
+\end{figure}
+
+\begin{figure}[ht]
+	\begin{minipage}[]{0.3\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/13_1_s}
+		\subcaption{Query image}
+	\end{minipage}
+	\begin{minipage}[]{0.7\linewidth}
+		\centering
+		\prplot{data/grid_text_hist/Q_16/13_1_s/pr_0.txt}{Texture only}
+		\prplotadd{data/gridding/color_hist/13_1_s/pr_2.txt}{Colour only}
+		\prplotadd{data/concat/13_1_s/pr_1.txt}{W = 1}
+		\prplotadd{data/concat/13_1_s/pr_4.txt}{W = 4}
+		\prplotadd{data/concat/13_1_s/pr_10.txt}{W = 10}
+		\prplotclose
+		\subcaption{Resultant graph}
+	\end{minipage}
+	\caption{Concatenated descriptor results for query image 13\_1\_s}
+	\label{fig:concat-books}
+\end{figure}
+
+Figure \ref{fig:concat-sheep} shows that the concatenated descriptor remains very close to the plot of only the RGB histogram for all values of $W$ plotted. This implies that all of the descriptors are very close in the texture plot, leading to the colour plot dominating the results.
+
+Figure \ref{fig:concat-books} on the other hand shows that the concatenated descriptor does vary between the two plots with differing values of $W$. This implies that both descriptors have a large amount of differentiation. The results show that a value of $W=1$, the results are close to the RGB histogram, but at $W=10$, the results are closer to the edge orientation histogram. A value of $W=4$ provides a compromise between the two as expected. The results are poorer than the RGB histogram only for this particular query image, but this is unlikely to hold true for all query images since some images will likely be described by colour well, and others by texture well.
 
 \chapter{Conclusion} \label{sec:conclusion}

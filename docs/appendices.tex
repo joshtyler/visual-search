@@ -1,64 +1,5 @@
 \clearpage
 \begin{appendices}
-	\chapter{Foo \label{app:foo}}
-	Placeholder
-	
-%\begin{figure}[ht]
-%	\begin{minipage}[]{0.3\linewidth}
-%		\centering
-%		\includegraphics[width = 0.9\linewidth]{figs/msrc/4_12_s}
-%		\subcaption{Query image}
-%		\label{fig:text-hist-bike-img}
-%	\end{minipage}
-%	\begin{minipage}[]{0.7\linewidth}
-%		\centering
-%		\prplot{data/gridding/color_hist/4_12_s/pr_2.txt}{Q=2} \prplotadd{data/gridding/color_hist/4_12_s/pr_3.txt}{Q=3}
-%		\prplotadd{data/gridding/color_hist/4_12_s/pr_4.txt}{Q=4}
-%		%\prplotadd{data/gridding/color_hist/4_12_s/pr_5.txt}{Q=5}
-%		\prplotadd{data/gridding/color_hist/4_12_s/pr_6.txt}{Q=6}
-%		%\prplotadd{data/gridding/color_hist/4_12_s/pr_7.txt}{Q=$}
-%		\prplotadd{data/gridding/color_hist/4_12_s/pr_8.txt}{Q=8}
-%		%\prplotadd{data/gridding/color_hist/4_12_s/pr_9.txt}{Q=9}
-%		\prplotadd{data/gridding/color_hist/4_12_s/pr_10.txt}{Q=10}
-%		\prplotclose
-%		\subcaption{Resultant graph}
-%		\label{fig:text-hist-bike-graph}
-%	\end{minipage}
-%	\caption{Gridded global colour histogram results for query image 4\_12\_s}
-%	\label{fig:text-hist-bike}
-%\end{figure}
-%
-%
-%\begin{figure}[ht]
-%	\begin{minipage}[]{0.3\linewidth}
-%		\centering
-%		\includegraphics[width = 0.9\linewidth]{figs/msrc/8_7_s}
-%		\subcaption{Query image}
-%		\label{fig:text-hist-bike-img}
-%	\end{minipage}
-%	\begin{minipage}[]{0.7\linewidth}
-%		\centering
-%		\prplot{data/global_text_hist/8_7_s/pr_2.txt}{Q=2} \prplotadd{data/global_text_hist/8_7_s/pr_3.txt}{Q=3}
-%		\prplotadd{data/global_text_hist/8_7_s/pr_4.txt}{Q=4}
-%		%\prplotadd{data/global_text_hist/8_7_s/pr_5.txt}{Q=5}
-%		\prplotadd{data/global_text_hist/8_7_s/pr_6.txt}{Q=6}
-%		%\prplotadd{data/global_text_hist/8_7_s/pr_7.txt}{Q=$}
-%		\prplotadd{data/global_text_hist/8_7_s/pr_8.txt}{Q=8}
-%		%\prplotadd{data/global_text_hist/8_7_s/pr_9.txt}{Q=9}
-%		\prplotadd{data/global_text_hist/8_7_s/pr_10.txt}{Q=10}
-%		\prplotadd{data/global_text_hist/8_7_s/pr_12.txt}{Q=12}
-%		\prplotadd{data/global_text_hist/8_7_s/pr_14.txt}{Q=14}
-%		\prplotadd{data/global_text_hist/8_7_s/pr_16.txt}{Q=16}
-%		\prplotadd{data/global_text_hist/8_7_s/pr_18.txt}{Q=18}
-%		\prplotadd{data/global_text_hist/8_7_s/pr_20.txt}{Q=20}
-%		\prplotclose
-%		\subcaption{Resultant graph}
-%		\label{fig:text-hist-bike-graph}
-%	\end{minipage}
-%	\caption{Global texture histogram (NO GRIDDING) results for query image 8\_7\_s}
-%	\label{fig:text-hist-bike}
-%\end{figure}
-%
 
 \chapter{Principal Component Analysis} \label{app:pca}
 Descriptors should be as discriminative as possible, whilst also being as compact as possible. This means that each descriptor should encode encode as much information allowing it to be differentiated from other images as possible, whilst also containing the minimum amount of data allowing it to do this. The descriptors investigated in the main body of the report focus on creating discriminative descriptors, but do not place as much importance on generating compact descriptors.It is possible that many of the descriptors contain information which is common to all images, and therefore acts as wasted data.
@@ -133,56 +74,6 @@ Table \ref{tbl:pca-dim-red} shows the number of dimensions in the resultant desc
 	]{data/pca/grid_color_hist/dim_report.txt}
 \end{table}
 
-
-
-
-
-%\begin{figure}[ht]
-%	\begin{minipage}[]{0.3\linewidth}
-%		\centering
-%		\includegraphics[width = 0.9\linewidth]{figs/msrc/9_23_s}
-%		\subcaption{Query image}
-%	\end{minipage}
-%	\begin{minipage}[]{0.7\linewidth}
-%		\centering
-%		\prplot{data/pca/grid_color_text/9_23_s/pr_1.txt}{E=0.1}
-%		\prplotadd{data/pca/grid_color_text/9_23_s/pr_3.txt}{E=0.3}
-%		\prplotadd{data/pca/grid_color_text/9_23_s/pr_5.txt}{E=0.5}
-%		\prplotadd{data/pca/grid_color_text/9_23_s/pr_7.txt}{E=0.7}
-%		\prplotadd{data/pca/grid_color_text/9_23_s/pr_9.txt}{E=0.9}
-%		\prplotadd{data/pca/grid_color_text/9_23_s/pr_9.9.txt}{E=0.99}
-%		\prplotadd{data/pca/grid_color_text/9_23_s/pr_11.txt}{No PCA}
-%		\prplotadd{data/concat/9_23_s/pr_1.txt}{No EM}
-%		\prplotclose
-%		\subcaption{Resultant graph}
-%	\end{minipage}
-%	\caption{Gridded RGB histogram, and edge orientation histogram, using PCA for query image 9\_23\_s}
-%	\label{fig:pca-grid-color-text-sheep}
-%\end{figure}
-%
-%\begin{figure}[ht]
-%	\begin{minipage}[]{0.3\linewidth}
-%		\centering
-%		\includegraphics[width = 0.9\linewidth]{figs/msrc/13_1_s}
-%		\subcaption{Query image}
-%	\end{minipage}
-%	\begin{minipage}[]{0.7\linewidth}
-%		\centering
-%		\prplot{data/pca/grid_color_text/13_1_s/pr_1.txt}{E=0.1}
-%		\prplotadd{data/pca/grid_color_text/13_1_s/pr_3.txt}{E=0.3}
-%		\prplotadd{data/pca/grid_color_text/13_1_s/pr_5.txt}{E=0.5}
-%		\prplotadd{data/pca/grid_color_text/13_1_s/pr_7.txt}{E=0.7}
-%		\prplotadd{data/pca/grid_color_text/13_1_s/pr_9.txt}{E=0.9}
-%		\prplotadd{data/pca/grid_color_text/13_1_s/pr_9.9.txt}{E=0.99}
-%		\prplotadd{data/pca/grid_color_text/13_1_s/pr_11.txt}{No PCA}
-%		\prplotadd{data/concat/13_1_s/pr_1.txt}{No EM}
-%		\prplotclose
-%		\subcaption{Resultant graph}
-%	\end{minipage}
-%	\caption{Gridded RGB histogram, and edge orientation histogram, using PCA for query image13\_1\_s}
-%	\label{fig:pca-grid-color-text-books}
-%\end{figure}
-
 \chapter{Distance Measures} \label{app:dist-measures}
 
 The results presented in the body of this report use the L2 Norm, otherwise known as Euclidean distance, to measure the distance between descriptors. However despite this being the most common choice for distance measure, other distance measures do exist, these will be compared in this Appendix.
@@ -190,10 +81,10 @@ The results presented in the body of this report use the L2 Norm, otherwise know
 The distance measured investigated are:
 \begin{enumerate}
 	\item $L_1$ norm (Manhattan distance)
-	\item $L_2$ norm (Euclidean Distance
+	\item $L_2$ norm (Euclidean distance)
 	\item $L_2$ norm squared
 	\item $L_\infty $ norm (Chebyshev distance)
-	\item Mahalanobis Distance
+	\item Mahalanobis distance
 \end{enumerate}
 
 A vector norm, $|\mathbf{x}|$ refers to a scaler property that, in perhaps an abstract way, describes the length of a vector, $\mathbf{x}$. Mathematically this is defined as shown in Equation \ref{eq:norm-def} \cite[p. 1081]{gradshteyn2007}.

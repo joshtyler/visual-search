@@ -53,6 +53,72 @@ This section discusses the visual search techniques implemented, along with the 
 \subsection{Global Colour Histogram} \label{sec:color-histogram}
 A global colour histogram quantises the RGB space into a series of bins. There are $Q$ bins for each dimension, and therefore $Q^3$ bins for the total image. Each pixel in the image is then sorted into the appropriate bin, and the sum of the bin totals is normalised to 1. This vector histogram, of length $Q^3$, can therefore be used to describe the image.
 
+\begin{figure}[ht]
+	\centering
+	\tdplotsetmaincoords{65}{135}
+	\newcommand{\histbox}[3]
+	{
+		\draw[dashed, color=#3] (#1) -- (#2x);
+		\draw[dashed, color=#3] (#1) -- (#2y);
+		\draw[dashed, color=#3] (#1) -- (#2z);
+		\draw[dashed, color=#3] (#2x) -- (#2xy);
+		\draw[dashed, color=#3] (#2y) -- (#2xy);
+		\draw[dashed, color=#3] (#2x) -- (#2xz);
+		\draw[dashed, color=#3] (#2z) -- (#2xz);
+		\draw[dashed, color=#3] (#2y) -- (#2yz);
+		\draw[dashed, color=#3] (#2z) -- (#2yz);
+		\draw[dashed, color=#3] (#2xy) -- (#2);
+		\draw[dashed, color=#3] (#2xz) -- (#2);
+		\draw[dashed, color=#3] (#2yz) -- (#2);
+	}
+	\begin{tikzpicture}[scale=2,tdplot_main_coords]
+	\coordinate (O) at (0,0,0);
+	\tdplotgetpolarcoords{1}{1}{1}
+	\tdplotsetcoord{A}{1.73205}{\tdplotrestheta}{\tdplotresphi}
+	\tdplotgetpolarcoords{2}{1}{1}
+	\tdplotsetcoord{B}{2.44949}{\tdplotrestheta}{\tdplotresphi}
+	\tdplotgetpolarcoords{1}{2}{1}
+	\tdplotsetcoord{C}{2.44949}{\tdplotrestheta}{\tdplotresphi}
+	\tdplotgetpolarcoords{1}{1}{2}
+	\tdplotsetcoord{D}{2.44949}{\tdplotrestheta}{\tdplotresphi}
+	
+	\tdplotgetpolarcoords{2}{2}{1}
+	\tdplotsetcoord{E}{3}{\tdplotrestheta}{\tdplotresphi}
+	\tdplotgetpolarcoords{2}{1}{2}
+	\tdplotsetcoord{F}{3}{\tdplotrestheta}{\tdplotresphi}
+	\tdplotgetpolarcoords{1}{2}{2}
+	\tdplotsetcoord{G}{3}{\tdplotrestheta}{\tdplotresphi}
+	
+	\tdplotgetpolarcoords{2}{2}{2}
+	\tdplotsetcoord{H}{3.464102}{\tdplotrestheta}{\tdplotresphi}
+	
+	\draw[thick,->] (0,0,0) -- (2.25,0,0) node[anchor=north east]{R};
+	\draw[thick,->] (0,0,0) -- (0,2.25,0) node[anchor=north west]{G};
+	\draw[thick,->] (0,0,0) -- (0,0,2.25) node[anchor=south]{B};
+	
+	
+	\draw plot [mark=*, mark size=2, mark options={color={rgb:red,1.5;green,0.5;blue,0.5}}] coordinates{(1.5,0.5,0.5)};
+	\draw plot [mark=*, mark size=2, mark options={color={rgb:red,0.3;green,1.6;blue,1.7}}] coordinates{(0.3,1.6,1.7)};
+	\draw plot [mark=*, mark size=2, mark options={color={rgb:red,1.8;green,1.8;blue,0.2}}] coordinates{(1.8,1.8,0.2)};
+	\histbox{O}{A}{blue}
+	\histbox{O}{B}{blue}
+	\histbox{O}{C}{blue}
+	\histbox{O}{D}{blue}
+	\histbox{O}{E}{blue}
+	\histbox{O}{F}{blue}
+	\histbox{O}{G}{blue}
+	\histbox{O}{H}{blue}
+	
+	\node[left] at (1.5,0.5,0.5) {$P_1$};
+	\node[below] at(0.3,1.6,1.7) {$P_2$};
+	\node[right] at(1.8,1.8,0.2) {$P_3$};
+	
+	\end{tikzpicture}
+	\caption{Visualisation of RGB histogram}
+	\label{fig:rgb-hist-diag}
+\end{figure}
+
+
 The implementation of this function was relatively straightforward, since example code for the function had been provided \cite{collomosse2016}. The only modifications made to the code were to explicitly state the histogram bin edges. This was necessary to provide a robust descriptor since the provided code normalised the histogram to the range of the input. Therefore an image containing only values in one area of the RGB space, would appear similar to an image with uniform distribution.
 
 The unit tests for this function consist of generating images of known RGB distribution, calculating the RGB histogram by hand for these images, then comparing that to the output of the function.

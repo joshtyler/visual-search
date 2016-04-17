@@ -13,6 +13,9 @@ function [ distance ] = vs_mahalanobis_distance( a, b, descriptor_directory )
     end;
     load(eigen_model_path,'val');
     
+    %Sometimes we get negative eigenvalues. Take the magnitude to avoid these throwing off the system.
+    val = abs(val);
+    
     %Our descriptors are rows, but val is a column
     val = val';
     

@@ -5,7 +5,7 @@
 %% This function constructs an eigenmodel from the data, and optionally projects it to a lower dimensionality
 %% Based upon methods introduced in EEE3032 Lab Worksheet 2(c) John Collomosse 2010  (J.Collomosse@surrey.ac.uk)
 
-function [ model ] = vs_construct_eigenmodel(descriptor_directory, energy_to_keep)
+function vs_construct_eigenmodel(descriptor_directory, energy_to_keep)
 
 % Construct array of file attributes for all .mat files in relevant directory
 file_listing = dir( fullfile([descriptor_directory, '/*.mat']) );
@@ -33,9 +33,8 @@ desc_norm = descriptors - avg;
 C = (desc_norm' * desc_norm) ./ size(desc_norm,1);
 
 %Calculate eigenmodel
-if nargin > 1
+if energy_to_keep <= 1.0
     %If we want to keep a certain energy
-    assert(energy_to_keep <= 1.0); %Check we don't want more than 100% of energy!
     val = eig(C);
     val = flipud(val); %Flip so largest value is at top
     total_energy = sum(sum(val));
@@ -48,6 +47,7 @@ if nargin > 1
     %Eigs keeps n strongest vectors
     [vct, val] = eigs(C,no_to_keep);
 else
+    %Keep all dims
     [vct, val] = eig(C);
     
 end

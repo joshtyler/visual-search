@@ -8,7 +8,7 @@
 %%  3 Calls the script to visualise the results
 %%  4 Calls the script to generate PR stats.
 
-function vs_visual_search(output_subdirectory, descriptor_subdirectory, descriptor_function, comparator_function, display, query_image, iteration)
+function vs_visual_search(output_subdirectory, descriptor_subdirectory, descriptor_function, comparator_function, display, query_image, iteration, pca_flag, pca_param)
 
 %Globals
 global verbosity_level;
@@ -33,9 +33,11 @@ descriptor_directory = strcat(DESCRIPTOR_BASE_DIRECTORY,descriptor_subdirectory,
 %  1 Function handle to decriptor generator.
 %  2 Directory containing images to compute descriptors for.
 %  3 Directory to save descriptors in.
-%  5 An argument to decide whether the user should be prompted to overwrite descriptors, or if the program should just do it.
+%  4 An argument to decide whether the user should be prompted to overwrite descriptors, or if the program should just do it.
 %       'p' for prompt, 'o' for overwrite, 'i' for ignore and don't recalculate.
-vs_compute(descriptor_function, IMAGE_DIRECTORY, descriptor_directory, 'i');
+%  5 A flag to choose whether to perform PCA or not.
+%  6 PCA energy parameter. If omitted, all eign model dimensions will be preserved
+vs_compute(descriptor_function, IMAGE_DIRECTORY, descriptor_directory, 'i', pca_flag, pca_param);
 
 % Stage 2. Compare descriptors
 % Parameters:

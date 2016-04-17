@@ -5,7 +5,7 @@
 %% This function calls the descriptor generator function passed to it for each image in the dataset.
 %% based upon cvpr_computedescriptors.m (c) John Collomosse 2010  (J.Collomosse@surrey.ac.uk)
 
-function vs_compute(compute_function, image_directory, output_directory, prompt)
+function vs_compute(compute_function, image_directory, output_directory, prompt, pca_flag, pca_param)
 
 % Check if output directory is empty
 if  any(size(dir( fullfile( [output_directory, '/*.mat']) ),1))
@@ -58,6 +58,10 @@ for i = 1 : length(file_listing)
     save([output_directory, '/',  file_listing(i).name(1: end-4), '.mat' ],'desc');
     
 end;
+
+if pca_flag == true
+    vs_construct_eigenmodel(output_directory, pca_param);
+end
 
 vprintf(1,'Finished computing %s descriptors.\n',func2str(compute_function));
 

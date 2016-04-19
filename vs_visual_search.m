@@ -8,7 +8,10 @@
 %%  3 Calls the script to visualise the results
 %%  4 Calls the script to generate PR stats.
 
-function vs_visual_search(output_subdirectory, descriptor_subdirectory, descriptor_function, comparator_function, display, query_image, iteration, pca_flag, pca_param)
+function avg_precision = vs_visual_search(output_directory, descriptor_base_directory, descriptor_function, comparator_function, display, query_image, iteration, pca_flag, pca_param, ap_at)
+
+% Constants
+IMAGE_DIRECTORY = 'c:/cvpr/msrc_v2/images';
 
 %Globals
 global verbosity_level;
@@ -17,16 +20,9 @@ verbosity_level = 0;
 %1 is short debug messages
 %2 is extended debug messages
 
-% Constants
-IMAGE_DIRECTORY = 'c:/cvpr/msrc_v2/images';
-%IMAGE_DIRECTORY = 'c:/cvpr/test_imgs';
-DESCRIPTOR_BASE_DIRECTORY = 'c:/cvpr/computed_descriptors/';
-OUTPUT_BASE_DIRECTORY = 'c:/cvpr/computed_results/';
-
 vprintf(1,'Begin visual_search.\n');
 
-output_directory = strcat(OUTPUT_BASE_DIRECTORY,output_subdirectory,'/');
-descriptor_directory = strcat(DESCRIPTOR_BASE_DIRECTORY,descriptor_subdirectory,iteration,'/');
+descriptor_directory = strcat(descriptor_base_directory,iteration,'/');
 
 % Stage 1. Compute descriptors
 % Parameters:
@@ -59,7 +55,7 @@ vs_compute(descriptor_function, IMAGE_DIRECTORY, descriptor_directory, 'i', pca_
 %  2 Directory containing images
 %  3 Number of images to display
 if display == true
-    vs_display(compare_result, IMAGE_DIRECTORY, 15);
+    vs_display(compare_result, IMAGE_DIRECTORY, 20);
 end
 
 % Stage 4. Plot precision-recall curve
@@ -67,7 +63,9 @@ end
 %  1 Matrix output by vs_compare
 %  2 Boolean. Display graph if true.
 %  3+4 Output directory and filename(optional)
-vs_compute_pr(compare_result, display, output_directory, strcat('pr_',iteration,'.txt'));
+% Return:
+%  1 Average precision
+avg_precision = vs_compute_pr(compare_result, display, output_directory, strcat('pr_',iteration,'.txt'),strcat('ap_',iteration,'.txt'), ap_at);
 
 vprintf(1,'Done!\n');
 

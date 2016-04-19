@@ -19,7 +19,7 @@ yellow = vs_gen_color(width, height, 1,1,0);
 Q = 4;
 result = vs_compute_rgb_histogram(red, Q);
 
-expected_result = zeros(1, Q^3 -1);
+expected_result = zeros(1, Q^3);
 expected_result(Q^2 * (Q-1) +1) = 1;
 
 assert(isequal(result, expected_result));
@@ -28,7 +28,7 @@ assert(isequal(result, expected_result));
 Q = 8;
 result = vs_compute_rgb_histogram(green, Q);
 
-expected_result = zeros(1, Q^3 -1);
+expected_result = zeros(1, Q^3);
 expected_result(Q * (Q-1) +1) = 1;
 
 assert(isequal(result, expected_result));
@@ -37,7 +37,7 @@ assert(isequal(result, expected_result));
 Q = 12;
 result = vs_compute_rgb_histogram(blue, Q);
 
-expected_result = zeros(1, Q^3 -1);
+expected_result = zeros(1, Q^3);
 expected_result(Q) = 1;
 
 assert(isequal(result, expected_result));
@@ -46,7 +46,7 @@ assert(isequal(result, expected_result));
 Q = 4;
 result = vs_compute_rgb_histogram(yellow, Q);
 
-expected_result = zeros(1, Q^3 -1);
+expected_result = zeros(1, Q^3);
 expected_result( (Q^2 + Q)*(Q-1) +1) = 1;
 
 assert(isequal(result, expected_result));

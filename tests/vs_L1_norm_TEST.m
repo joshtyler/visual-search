@@ -35,4 +35,4 @@ assert(dist == 15);
 p3a = rand(1,10);
 p3b = rand(1,10);
 dist = vs_L1_norm(p3a, p3b);
-assert(dist == norm( p3a - p3b, 1));
+assert(abs(dist - norm( p3a - p3b, 1)) < 1e-3);

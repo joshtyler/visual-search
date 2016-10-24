@@ -6,8 +6,6 @@ This program is intended to use the msrc_v2 image database, downloadable [here](
 
 <p align="center">
 <img src="img/2.jpg" alt="Example output for a given search image" width="500" align="middle">
-
-Example output for a given search image
 </p>
 
 ##How to use

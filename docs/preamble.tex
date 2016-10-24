@@ -2,7 +2,7 @@
 \documentclass[11pt, a4paper]{report}
 
 \usepackage{geometry}
-\geometry{a4paper, portrait, margin=2cm}
+\geometry{a4paper, portrait, top=2cm,bottom=2cm, left=2cm, right=2cm}
 
 %Sort out overly-generous chapter spacing
 \usepackage{titlesec}
@@ -77,14 +77,13 @@
 \apptocmd{\thebibliography}{\raggedright}{}{}
 
 %Colour
-\usepackage[dvipsnames]{xcolor}
+\usepackage[dvipsnames, table]{xcolor}
 
 %Appendix Handling
 \usepackage[titletoc,title]{appendix}
 
 %Acronyms!
 \usepackage[nonumberlist, acronyms, toc,]{glossaries}
-\makenoidxglossaries
 \setacronymstyle{long-short}
 \renewcommand{\glsgroupskip}{} %Don't put a small space between groups
 \input{docs/acronyms} %Import list of acronyms
@@ -96,6 +95,11 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \DeclareMathOperator{\atantwo}{atan2}
+
+%Posh enumeration
+\usepackage{enumitem}
+\setlist[enumerate]{nosep} %No special separation for enumerated lists
+\setlist[itemize]{nosep}
 
 
 %SI representations
@@ -116,7 +120,7 @@
 % We have some pretty big data sets, so lets use the externalise feature
 % See http://tex.stackexchange.com/questions/7953/how-to-expand-texs-main-memory-size-pgfplots-memory-overload
 %\usepgfplotslibrary{external} 
-%\tikzexternalize
+%\tikzexternalize[shell escape=-enable-write18, up to date check=diff]
 
 % Pretty tables 
 \usepackage{booktabs}
@@ -162,7 +166,6 @@
 %Create new P-R plot
 \newcommand{\prplot}[2]
 {
-	\begin{tikzpicture}
 	\pgfplotsset{every axis/.append style={
 			line width=1pt,
 			tick style={line width=0.8pt}}}
@@ -183,6 +186,7 @@
 	ymajorgrids=true,
 	cycle list name=exotic,
 	legend style ={anchor=north east,legend cell align=left,at={(1,1)}},
+	mark size=1.75pt,
 	]
 	
 	%Note: pure chance precision will be for  plot 1 only
@@ -209,6 +213,5 @@
 %Finish P-R Plot
 \newcommand{\prplotclose}
 {
-	\end{axis}
-	\end{tikzpicture}	
+	\end{axis}	
 }

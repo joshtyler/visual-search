@@ -1,15 +1,19 @@
 \chapter{Introduction} \label{sec:intro}
 
-Large databases of images exist in various fields. Indexing ans searching these using textual descriptors is generally not effective \cite[p.657]{forsyth2012}. Visual search offers an alternative to this, by allowing a user to search an image collection using an image as the query, with the aim being to return images similar to the query. This is achieved by generating and comparing numeric, vector based, image descriptors which can be treated similar to words.
+Large databases of images exist in various fields. Indexing and searching these using traditional textual descriptors is generally not effective \cite[p.657]{forsyth2012}. Visual search offers an alternative to this, by allowing a user to search an image collection using an image as the query, with the aim being to return similar images. This is achieved by generating and comparing numeric, vector based, image descriptors which can be treated similar to words.
 
 This report presents the implementation of such a system in \gls{matlab}. Several different methodologies will be considered, and their results compared and contrasted.
 
-In order to test the system, the Microsoft Research Cambridge Object Recognition Image Database, version 2.0 will be used. This is a freely available image database which is split into 20 rows, with each row containing similar images \cite{criminisi2004}.
+In order to test the system, the Microsoft Research Cambridge, object recognition image database, version 2.0 will be used. This is a freely available image database which is split into 20 rows, with each row containing similar images \cite{criminisi2004}.
+
+For the purposes of evaluating this system, similarity will be defined using the 20 categories which the image set is sorted into. This is not ideal since the categories encode level 2 meaning, whilst the descriptors used will perform level 1 operations \cite{eakins1998}. For this reason, it is not expected that the system will have exceptional performance.
+
+In order to calculate the distance between descriptors, the $L_2$ norm is used. This distance measure, also known as Euclidean distance, returns the straight line distance between two points in a vector space. It is discussed in greater detail, and performance evaluated against other distance measures, in Appendix \ref{app:dist-measures}. 
 
 \section{System Design} \label{sec:sys-design}
 A common framework was used to apply generate descriptors from all of the images, compare them, and display results. This framework uses a \gls{matlab} function handle to input both the descriptor and distance measure. This method allows the core code-body to be generic, so that in order to run a different test only the external descriptor and/or distance measure functions need to be changed.
 
-A block diagram of the operation of the system is shown in Figure \ref{fig:sys-operation}.
+A block diagram of the operation of the system is shown in Figure \ref{fig:sys-operation}. In this figure shaded blocks represent functions necessary for the system's core operation, white blocks represent auxillary functions, and dashed blocks represent functions or data which may be omitted. The arrows show the transitions of data. 
 
 \begin{figure}[ht]
 	\centering
@@ -17,15 +21,17 @@ A block diagram of the operation of the system is shown in Figure \ref{fig:sys-o
 	\tikzstyle{arrow} = [thick,->,>=stealth]
 	\begin{tikzpicture}[node distance=1cm]
 		\node (compute) [generalRect] {Compute Descriptors};
-		\node (descriptor) [generalRect, fill=white, right = of compute] {Descriptor Function};
+		\node (descriptor) [generalRect, right = of compute] {Descriptor Function};
+		\node (pca) [generalRect, fill=white, above = 0.5cm of descriptor, dashed] {PCA Function};
 		\node (compare) [generalRect, below= of compute] {Compare Descriptors};
 		\node (query) [generalRect, fill=white, left = of compare, dashed] {Query Image};
-		\node (dist) [generalRect, fill=white, right = of compare] {Distance Measure};
+		\node (dist) [generalRect, right = of compare] {Distance Measure};
 		\node (display) [generalRect, below= of compare, fill=white] {Display Results};
 		\node (plotPR) [generalRect, below= of display, fill=white] {\shortstack{Plot Precision-Recall Graph}};
 		
 		\draw [arrow] (compute) -- (compare);
 		\draw [arrow, <->] (compute) -- (descriptor);
+		\draw [arrow, <->, dashed] (pca.west) -- (compute.east);
 		\draw [arrow] (compare) -- (display);
 		\draw [arrow, <->] (compare) -- (dist);
 		\draw [arrow, dashed] (query) -- (compare);
@@ -35,23 +41,11 @@ A block diagram of the operation of the system is shown in Figure \ref{fig:sys-o
 	\label{fig:sys-operation}
 \end{figure}
 
-\subsection{Test Methodology} \label{sec:test-methodology}
-In order to test the system, a unit test has been written for all of the descriptor and distance measure functions. Each of these tests complies with \gls{matlab}'s unit testing framework, so can be executed using the \texttt{runtests} command.
+\chapter{Description Techniques} \label{sec:techniques-implemented}
+This Chapter discusses the different descriptor generation techniques implemented, along with the theory of their operation and the difficulties which were encountered whilst implementing them. Details of how each technique was tested is given in Appendix \ref{app:test-methodology}.
 
-\subsubsection{Test pattern generation} \label{sec:test-pattern-gen}
-Some tests require test patterns in order to test their functionality correctly. For this purpose a suite of test pattern generation programs was written to create image which contain:
-\begin{itemize}
-	\item A uniform colour.
-	\item A uniform pattern.
-	\item A combination of the above.
-	\item A grid of several of the above images.
-\end{itemize}
-These test patterns can be used both internally to the unit tests, as well as to perform system level testing.
-
-\section{Techniques Implemented} \label{sec:techniques-implemented}
-This section discusses the visual search techniques implemented, along with the theory of their operation and the difficulties which were encountered whilst implementing them.
-\subsection{Global Colour Histogram} \label{sec:color-histogram}
-A global colour histogram quantises the RGB space into a series of bins. There are $Q$ bins for each dimension, and therefore $Q^3$ bins for the total image. Each pixel in the image is then sorted into the appropriate bin, and the sum of the bin totals is normalised to 1. This vector histogram, of length $Q^3$, can therefore be used to describe the image.
+\section{Global Colour Histogram} \label{sec:color-histogram}
+A global colour histogram quantises the RGB space into a series of bins. There are $Q$ bins for each dimension, and therefore $Q^3$ bins for the total image. Each pixel in the image is then sorted into the appropriate bin, and the sum of the bin totals is normalised to 1. This vector histogram, of length $Q^3$, can therefore be used to describe the image. A diagrammatic representation of this technique is shown in Figure \ref{fig:rgb-hist-diag}. This Figure shows the RGB space quantised with a quantisation level of $Q=2$, yielding $2^2=4$ bins. $P_1$, $P_2$, and $P_3$ represent points in the RGB space which will be quantised to their containing boxes.
 
 \begin{figure}[ht]
 	\centering
@@ -119,15 +113,28 @@ A global colour histogram quantises the RGB space into a series of bins. There a
 \end{figure}
 
 
-The implementation of this function was relatively straightforward, since example code for the function had been provided \cite{collomosse2016}. The only modifications made to the code were to explicitly state the histogram bin edges. This was necessary to provide a robust descriptor since the provided code normalised the histogram to the range of the input. Therefore an image containing only values in one area of the RGB space, would appear similar to an image with uniform distribution.
+The implementation of this function was relatively straightforward, since example code for the function had been provided \cite{collomosse2016}. The only modifications made to the code were to explicitly state the histogram bin edges. This was necessary to provide a robust descriptor since the provided code normalised the histogram to the range of the input. Therefore an image containing only values in one area of the RGB space, would appear similar to an image with uniform distribution. The function is implemented as \texttt{H =  vs\_compute\_rgb\_histogram(img, Q)} where \texttt{H} is the descriptor returned, \texttt{img} is the image input, and \texttt{Q} is the quantisation level for each image dimension. The only variable parameter is therefore $Q$.
 
-The unit tests for this function consist of generating images of known RGB distribution, calculating the RGB histogram by hand for these images, then comparing that to the output of the function.
-\subsection{Texture Histogram} \label{sec:texture-histogram}
-Texture is a concept in computer vision, but is difficult to define. Texture loosely corresponds to a repeating pattern of edge characteristics, examples of which would include grass pebbles, and hair \cite[p. 194]{forsyth2012}. Texture is important because it appears to be a strong indicator of object identity.
+\section{Gridding} \label{sec:gridding-concatenation}
+Gridding of features allows descriptors to apply locally to parts of an image. The implementation of this is fairly simple in \gls{matlab}. The image can be split using the native array indexing of \gls{matlab} to select a subset of the image array,  and the descriptor function can then be applied to each of these sub images. The resultant descriptors are then concatenated into a matrix.
 
-The texture histogram function is implemented as the concatenation of two functions: an edge orientation function, and a histogram function. The edge orientation function returns a two dimensional array where each element contains a value corresponding to an estimate of the edge orientation at that location. This estimate is in the range $-\pi$ to $+\pi$, but is normalised to $0$ to $1$. Weak edges are set to a normalised value of 0.5, corresponding to \SI{0}{\radian}.
+Gridding is implemented as \texttt{F = vs\_grid(img, h\_level, v\_level, compute\_function)}, where \texttt{img} is the image input, \texttt{h\_level} is the horizontal quantisation level, \texttt{v\_level} is the vertical quantisation level and \texttt{compute\_function} is the descriptor generation function. This configuration therefore gives two independent variables, \texttt{h\_level} and \texttt{v\_level}.
 
-In order to perform the edge detection, and edge angle estimation, the function uses the Sobel operator \cite{sobel2015}. The sobel operator is formed of two kernels which are convoluted with input image in order to perform edge detection in the x and y directions respectively. The kernels are defined in Equation \ref{eq:sobel-kernels}. 
+However, since most of the images in the dataset have an aspect ratio of approximately 1.5:1, it makes sense to set the vertical quantisation level to 1.5 times the horizontal quantisation level. Therefore the overall quantisation level, $Q$ can be defined, where \texttt{h\_level = ceil(1.5*Q)}, and \texttt{v\_level = Q}.
+
+\section{Edge Orientation Histogram} \label{sec:texture-histogram}
+Texture is an important concept in computer vision, but is difficult to define. Texture loosely corresponds to a repeating pattern of edge characteristics, examples of which would include grass pebbles, and hair \cite[p. 194]{forsyth2012}.
+
+One method of creating a texture based descriptor is to use an edge orientation histogram. This works as follows:
+\begin{enumerate}
+	\item Edges are detected in the image.
+	\item An estimation of the orientation of each edge is calculated.
+	\item A histogram is created of the edge orientations.
+\end{enumerate}
+
+This process is implemented using two functions: an edge orientation function, and a histogram generation function. The edge orientation function returns a two dimensional matrix where each element contains a value corresponding to an estimate of the edge orientation at that location. This estimate is in the range $-\pi$ to $+\pi$, but is normalised to $0$ to $1$. Weak edges are set to a normalised value of 0.5, corresponding to \SI{0}{\radian}.
+
+In order to perform the edge detection, and edge angle estimation, the Sobel operator is used \cite{sobel2015}. The Sobel operator is formed of two kernels which are convolved with input image in order to perform edge detection in the x and y directions respectively. The kernels are defined in Equation \ref{eq:sobel-kernels}. 
 
 \begin{equation}
 	K_x = 
@@ -145,7 +152,7 @@ In order to perform the edge detection, and edge angle estimation, the function 
 	\label{eq:sobel-kernels}
 \end{equation}
 
-The edge magnitude and angle are calculated as described in Equations \ref{eq:sobel-mag} and \ref{eq:sobel-ang} respectively. It should be noted that the operates in these equations apply on an element-by-element basis, not to the array as a whole. In addition, the $K_y$ value is inverted in order to allow the performance to match the \gls{matlab} library function \texttt{imgradient}. This allows for easier testing. The pixels with edge magnitudes above a certain threshold are passed to the histogram generation function.
+The edge magnitude and angle are calculated as described in Equations \ref{eq:sobel-mag} and \ref{eq:sobel-ang} respectively. It should be noted that the operators in these equations apply on an element-by-element basis, not to the matrices as a whole. In addition, the $K_y$ value is inverted in order to allow the performance to match the \gls{matlab} library function \texttt{imgradient}, this allows for easier testing. The pixels with edge magnitudes above a certain threshold are passed to the histogram generation function.
 \begin{equation}
 \text{Mag} = \sqrt{{K_x}^2 + {K_y}^2}
 \label{eq:sobel-mag}
@@ -155,40 +162,43 @@ The edge magnitude and angle are calculated as described in Equations \ref{eq:so
 \label{eq:sobel-ang}
 \end{equation}
 
-In order to test the edge detection function, the output is compared to the \gls{matlab} function \texttt{imgradient}, for several test images, plus a real image. In addition system level testing has been performed with several test images.
-\subsection{Gridding and Concatenation of Features} \label{sec:gridding-concatenation}
-Gridding of features allows descriptors to apply be considered locally to parts of an image. The implementation of this is fairly simple in \gls{matlab}. The image can be split using the native array indexing of \gls{matlab} to select a subset of the image array. The descriptor function can then be applied to each of these sub images, and the resultant descriptors concatinated into a matrix.
+The edge orientation function is implemented as \texttt{F = vs\_edge\_detect(img, compute\_function, strength)} where \texttt{F} is the descriptor returned, \texttt{img} is the image input, \texttt{compute\_function} is the histogram generation function, and \texttt{strength} is the minimum edge strength to consider (range 0--1).
 
-The gridding functon is tested by feeding a gridded sample image into the function and comparing the output to a manually calculated version of what is expected. A test descriptor function, which returns the image reshaped into a vector array is used to simplify this process.
+The histogram generation function is \texttt{H = vs\_compute\_histogram(img, Q)} where \texttt{H} is the histogram returned, \texttt{img} is the image input and \texttt{Q} is the quantisation factor. When \texttt{vs\_compute\_histogram} is used as the \texttt{compute\_function} in \texttt{vs\_edge\_detect}, the system can produce an edge orientation histogram, with two independent parameters. These parameters determine the minimum strength edge to consider, as well as the quantisation level of the histogram. These parameters will be referred to as $E$ and $Q$ respectively.
 
-\subsection{Distance Measures} \label{sec:distance-measures}
+Additionally, since texture is an inherently local feature, the image will be gridded. The descriptor function handle is therefore : \texttt{@(x)vs\_grid(x, v\_level, h\_level, @(x)vs\_edge\_detect(x, @(x)vs\_compute\_histogram(x,Q),E))}.
 
-In order to calculate the difference between descriptors, the L2 norm is used. This distance measure returns the square root of sum of the squares of the differences between elements of a descriptor, as defined in Equation \ref{eq:l2-norm}, where $d_i$ refers to individual differences between array elements.
+\section{Concatenation of Descriptors} \label{sec:conc-desc}
+Descriptors focusing upon an individual aspect of an image, such as colour or texture have already been discussed, as well as how the can be applied to multiple sections of an image rather than globally.
 
-\begin{equation}
-	\text{Distance} = \sqrt{ \Sigma{ ({d_i}^2)} }
-	\label{eq:l2-norm}
-\end{equation}
+It stands to reason therefore that multiple descriptors could be combined to produce a descriptor of even greater effectiveness, such as a combination of an RGB histogram and a texture histogram. This is possible in \gls{matlab} using the native array indexing interface, but it is clearer to use the \texttt{horzcat} function.
 
-The L2 norm calculation function is tested by comparing the output of the function to manually calculated values for various test vectors.
+A combined descriptor can therefore be invoked using the function \texttt{@(x)horzcat( func\_1(x) .* M, func\_2(x))} where \texttt{texture\_func(x)} and \texttt{color\_func(x)} are function handles for two descriptor functions with a single parameter, \texttt{x} for the input image. The only other parameter in this function is \texttt{M}. \texttt{M} defines a weighting factor between the two descriptors, and can be used to give a greater weighting to one over the other. This works by using a multiplier value to either spread all of the values in the descriptor further apart, or bring them closer together.
 
 \chapter{Experimental Results} \label{sec:results}
 
-\section{Global Colour Histogram} \label{sec:global-colour-histogram-results}
-The global colour histogram function is implemented as \texttt{H =  vs\_compute\_rgb\_histogram(img, Q)} where \texttt{H} is the descriptor returned, \texttt{img} is the image input, and \texttt{Q} is the quantisation level for each image dimension. The descriptor is therefore of length $Q^3$, as discussed in Section \ref{sec:color-histogram}.
+In order to evaluate the performance of each descriptor, two test images have been chosen from the data set: 9\_23\_s and 13\_1\_s. These images have been chosen because they represent two contrasting examples of what could be presented to the algorithm. Image 9\_23\_s shows a sheep in a field. This image has two strongly dominant colours: the green of the grass, and the cream of the sheep's wool, as well as two regions of largely uniform texture: the sheep's body, and the grass. Image 13\_1\_s strongly contrasts this. This image shows a collection of differently coloured books on a shelf. The image therefore contains a large variety of colours distributed around the image. In addition to this the transitions between the books, as well as the text on the spine of the books means that a large amount of varied texture is distributed across the image.
 
-In order to analyse the effect of quantisation level on performance, descriptors have been generated for various values of $Q$, and the performance of each value analysed for each test value. Two test images have been chosen, 9\_23\_s and 13\_1\_s, and their results are displayed in Figures \ref{fig:colour-hist-sheep-graph} and \ref{fig:colour-hist-books-graph} respectively. These images have been chosen because they represent two contrasting examples of what could be presented to the algorithm. Image 9\_23\_s shows a sheep in a field. This image has two strongly dominant colours: the green of the grass, and the cream of the sheep's wool, and very little other colour content in the picture. On the other hand 13\_1\_s shows a collection of differently coloured books on a shelf. This image contains many different colours.
+The fact that these images contrast in many different ways means that they should be ideal to evaluate the performance of each descriptor in a fair way, as well as determine the optimum parameters for each descriptor function. The performance of the descriptors across the wider images in the dataset will then be presented in Section \ref{sec:results}.
+
+In order to evaluate performance, a precision-recall characteristic is plotted for each test. This characteristic is a plot showing the proportion of the returned results which have been relevant (precision), vs the number of relevant results returned (recall). The ideal precision-recall characteristic would be a horizontal line at precision = 1, a system which produced this characteristic would return all the relevant images, and none of the irrelevant images. Most practical systems produce a characteristic which slopes from the top left to the bottom right, this occurs because systems first return the results they are most sure about. These results are likely to be correct, and so precision will be high, but since not many results have yet been returned, recall will be low. As the system returns an increasing number of results, an increasing number of irrelevant results will be returned also, causing precision to decrease as recall increases.
+
+\section{Global Colour Histogram} \label{sec:global-colour-histogram-results}
+The global colour descriptor has one parameter the quantisation level, $Q$, which produces a descriptor of length $Q^3$, as discussed in Section \ref{sec:color-histogram}.
+
+In order to analyse the effect of quantisation level on performance, results will be generated for various values of $Q$, and the performance of each image analysed for each test value. The expected result is that higher values of $Q$ will produce better results, up to a certain point, after which performance will decrease. This should happen because at very high quantisation levels values, there are too many possible bins, and as such nominally similar colours will be sorted into different bins. Since each bin is a different dimension in the descriptor, they will not therefore be considered similar by the distance measure function.
 
 \begin{figure}[ht]
 	\begin{minipage}[]{0.3\linewidth}
 		\centering
 		\includegraphics[width = 0.9\linewidth]{figs/msrc/9_23_s}
 		\subcaption{Query image}
-		\label{fig:colour-hist-sheep-img}
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
-		\prplot{data/global_colour_hist/9_23_s/pr_2.txt}{Q=2} \prplotadd{data/global_colour_hist/9_23_s/pr_3.txt}{Q=3}
+		\begin{tikzpicture}
+		\prplot{data/global_colour_hist/9_23_s/pr_2.txt}{Q=2}
+		\prplotadd{data/global_colour_hist/9_23_s/pr_3.txt}{Q=3}
 		\prplotadd{data/global_colour_hist/9_23_s/pr_4.txt}{Q=4}
 		%\prplotadd{data/global_colour_hist/9_23_s/pr_5.txt}{Q=5}
 		\prplotadd{data/global_colour_hist/9_23_s/pr_6.txt}{Q=6}
@@ -197,25 +207,24 @@ In order to analyse the effect of quantisation level on performance, descriptors
 		%\prplotadd{data/global_colour_hist/9_23_s/pr_9.txt}{Q=9}
 		\prplotadd{data/global_colour_hist/9_23_s/pr_10.txt}{Q=10}
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
-		\label{fig:colour-hist-sheep}
 	\end{minipage}
 	\caption{Global colour histogram results for query image 9\_23\_s}
-	\label{fig:colour-hist-sheep-graph}
+	\label{fig:colour-hist-sheep}
 \end{figure}
-
-The results shown in Figures \ref{fig:colour-hist-sheep-graph} and \ref{fig:colour-hist-books-graph} match expectations suggesting that a very low quantisation value does not deliver good results, because there are not enough bins to differentiate between the images. In addition very high values, such as $Q=10$ do not work well because there is two many possible bins, and as such nominally similar colours will be sorted into different bins, and so will not be considered similar by the distance measure function. Both test images suggest that a quantisation level of $Q=4$, yielding $64$ bins, gives the best result, since the line joining these data points is closest to the top right hand corner.
 
 \begin{figure}[ht]
 	\begin{minipage}[]{0.3\linewidth}
 		\centering
 		\includegraphics[width = 0.9\linewidth]{figs/msrc/13_1_s}
 		\subcaption{Query image}
-		\label{fig:colour-hist-books-img}
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
-		\prplot{data/global_colour_hist/13_1_s/pr_2.txt}{Q=2} \prplotadd{data/global_colour_hist/13_1_s/pr_3.txt}{Q=3}
+		\begin{tikzpicture}
+		\prplot{data/global_colour_hist/13_1_s/pr_2.txt}{Q=2}
+		\prplotadd{data/global_colour_hist/13_1_s/pr_3.txt}{Q=3}
 		\prplotadd{data/global_colour_hist/13_1_s/pr_4.txt}{Q=4}
 		%\prplotadd{data/global_colour_hist/13_1_s/pr_5.txt}{Q=5}
 		\prplotadd{data/global_colour_hist/13_1_s/pr_6.txt}{Q=6}
@@ -224,20 +233,21 @@ The results shown in Figures \ref{fig:colour-hist-sheep-graph} and \ref{fig:colo
 		%\prplotadd{data/global_colour_hist/13_1_s/pr_9.txt}{Q=9}
 		\prplotadd{data/global_colour_hist/13_1_s/pr_10.txt}{Q=10}
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
-		\label{fig:colour-hist-books-graph}
 	\end{minipage}
 	\caption{Global colour histogram results for query image 13\_1\_s}
 	\label{fig:colour-hist-books}
 \end{figure}
 
+The results shown in Figures \ref{fig:colour-hist-sheep} and \ref{fig:colour-hist-books} match expectations suggesting that a very low quantisation value does not deliver good results, yet performance also drops off at higher quantisation levels. Both test images suggest that a quantisation level of $Q=4$, yielding $64$ bins, gives the best result, since the line joining these data points is closest to the top right hand corner.
+
+The results also show that query image 13\_1\_s performs better than 9\_23\_s. The reason for this is likely due to the fact that 13\_1\_s has a much more varied colour distribution, allowing it to have a much more unique histogram signature. This means that similar images can be better matched. In contrast to this, the green field will dominate the histogram of image 9\_23\_s meaning the system may confuse it with other images containing a green background, such as those of other farm animals in a field.
+
 \FloatBarrier
 \section{Gridding} \label{sec:gridding-results}
-Gridding is implemented as the function \texttt{F = vs\_grid(img, h\_level, v\_level, compute\_function)}, where \texttt{img} is the image input, \texttt{h\_level} is the horizontal quantisation level, \texttt{v\_level} is the vertical quantisation level and \texttt{compute\_function} is the descriptor generation function. This configuration therefore gives us two independent variables, \texttt{h\_level} and \texttt{v\_level}.
 
-However, since most of the images in the dataset have a quantisation level of approximately 1.5:1, it makes sense to set the vertical quantisation level to 1.5 times the horizontal quantisation level. Therefore the overall quantisation level, $Q$ can be defined, where \texttt{h\_level = ceil(1.5*Q)}, and \texttt{v\_level = Q}.
-
-In a similar manner to that of Section \ref{sec:global-colour-histogram-results} the optimum quantisation factor will be determined by computing descriptors for various values of $Q$ and then, using two test images, determining which has best results. For this test, the value of $Q$ for the global colour histogram which prodced the best results ($Q=4$) will be used. The same test images as used in Section \ref{sec:global-colour-histogram-results} have also been maintained in order to allow a performance comparison with the non-gridded image.
+As discussed in Section \ref{sec:gridding-concatenation}, the independent parameters for the gridding function can be reduced to a single quantisation factor $Q$. In a similar manner to that of Section \ref{sec:global-colour-histogram-results} the optimum quantisation factor will be determined by computing descriptors for various values of $Q$ and then, using the two test images, determining which has best results. 
 
 The same effect of increasing Quantisation factor as experienced with the global colour histogram is expected. Increasing the value should increase performance up to a maximum, at this point the performance should decrease with increasing quantisation factor. One reason for this is that tighter grids mean that small movements in the object could potentially result in the image being quantised in a very different way, meaning visually similar images would be distant from each other in the quantised space.
 
@@ -251,6 +261,7 @@ The same effect of increasing Quantisation factor as experienced with the global
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
+		\begin{tikzpicture}
 		\prplot{data/gridding/color_hist/9_23_s/pr_1.txt}{Q=1}
 		\prplotadd{data/gridding/color_hist/9_23_s/pr_2.txt}{Q=2}
 		\prplotadd{data/gridding/color_hist/9_23_s/pr_3.txt}{Q=3}
@@ -260,6 +271,7 @@ The same effect of increasing Quantisation factor as experienced with the global
 		\prplotadd{data/global_colour_hist/9_23_s/pr_4.txt}{No grid}
 
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
 		\label{fig:grid-color-sheep-graph}
 	\end{minipage}
@@ -277,6 +289,7 @@ The same effect of increasing Quantisation factor as experienced with the global
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
+		\begin{tikzpicture}
 		\prplot{data/gridding/color_hist/13_1_s/pr_1.txt}{Q=1}
 		\prplotadd{data/gridding/color_hist/13_1_s/pr_2.txt}{Q=2}
 		\prplotadd{data/gridding/color_hist/13_1_s/pr_3.txt}{Q=3}
@@ -286,6 +299,7 @@ The same effect of increasing Quantisation factor as experienced with the global
 		\prplotadd{data/global_colour_hist/13_1_s/pr_4.txt}{No grid}
 		
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
 		\label{fig:grid-color-books-graph}
 	\end{minipage}
@@ -295,20 +309,18 @@ The same effect of increasing Quantisation factor as experienced with the global
 
 Figures \ref{fig:grid-color-sheep} and \ref{fig:grid-color-books} show the results of the gridding process.
 
-Figure \ref{fig:grid-color-sheep} shows little variation across gridding quantisation levels, this is likely due to the fact that the image has only two dominant colours, so all grids have similar colour histograms. Gridding does in the general case show slight performance improvement with this image however. Notably increasing prevision values for higher quantisation levels.
+Figure \ref{fig:grid-color-sheep} shows little variation across gridding quantisation levels, this is likely due to the fact that the image has only two dominant colours, so all grids have similar colour histograms. Gridding does, in the general case, show slight performance improvement with this image however. Notably increasing precision values for higher recall levels.
 
-Figure \ref{fig:grid-color-books} on the other hand shows great variation in the result with grid size. Increasing the grid quantisation level to 2 greatly increases the performance up to a recall of around 0.4, and a grid quantisation level of 1 also increases the performance by a large amount also. In addition to this, much higher quantisation steps, such as 8 and 15 show greatly decreased performance. This is due to reasons mentioned previously.
+Figure \ref{fig:grid-color-books} on the other hand shows great variation in the result with grid size. Increasing the grid quantisation level to 2 greatly increases the performance up to a recall of around 0.4, and a grid quantisation level of 1 also increases the performance by a large amount also. In addition to this, much higher quantisation steps, such as 8 and 15 show greatly decreased performance.
+
+The optimum quantisation factor is therefore $Q=2$, yielding \texttt{h\_level = 3}, and \texttt{v\_level = 2} using the formulae defined in Section \ref{sec:gridding-concatenation}.
 
 
 \FloatBarrier
-\section{Texture Histogram} \label{sec:texture-histogram-results}
-The edge orientation function is implemented as \texttt{F = vs\_edge\_detect(img, compute\_function, strength)} where \texttt{F} is the descriptor returned, \texttt{img} is the image input, \texttt{compute\_function} is the histogram generation function, and \texttt{strength} is the minimum edge strength to consider (range 0--1). The histogram generation function is \texttt{H = vs\_compute\_histogram(img, Q)} where \texttt{H} is the histogram returned, \texttt{img} is the image input and \texttt{Q} is the quantisation factor. When \texttt{vs\_compute\_histogram} is used as the \texttt{compute\_function} in \texttt{vs\_edge\_detect}, the system can produce an edge orientation histogram, with two independent parameters. These parameters determine the minimum strength edge to consider, as well as the quantisation level of the histogram. These parameters will be referred to as $E$ and $Q$ respectively.
+\section{Edge Orientation Histogram} \label{sec:texture-histogram-results}
+As discussed in Section \ref{sec:texture-histogram}, the gridded edge orientation histogram implementation has two variable parameters, $E$ and $Q$ (setting the grid quantisation factors to the optimised values from Section \ref{sec:gridding-results}). Evaluating the effect of changing both together is computationally expensive, and the results are hard to visualise, since a 3-axis plot would be required. Therefore the two variables will be evaluated separately.
 
-Additionally, since texture is an inherently local feature, the image will be gridded. The descriptor function handle is therefore : \texttt{@(x)vs\_grid(x,3,2, @(x)vs\_edge\_detect(x, @(x)vs\_compute\_histogram(x,Q),E))}. The grid quantisation factor of $Q=2$ is used, since this was determined to be the most effective for gridding the RGB histogram in Section \ref{sec:gridding-results}.
-
-Evaluating the effect of changing both $E$ and $Q$ together is computationally expesive, and the results are hard to visualise, since a 3 axis plot would be required. Therefore the two variables will be evaluated separately.
-
-Initially the effect of changing the histogram quantisation level, $Q$, will be investigated using a constant $E$ of 0. This will leave all edges in the image for the consideration of the histogram
+Initially the effect of changing the histogram quantisation level, $Q$, will be investigated using a constant $E$ of $0$. This will leave all edges in the image for the consideration of the histogram. The expected result is similar to increasing the quantisation level of the RGB histogram -- increasing $Q$ will increase performance up to a point, but increasing past that point will result in poorer results
 
 \begin{figure}[ht]
 	\begin{minipage}[]{0.3\linewidth}
@@ -318,6 +330,7 @@ Initially the effect of changing the histogram quantisation level, $Q$, will be 
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
+		\begin{tikzpicture}
 		\prplot{data/grid_text_hist/E_0/9_23_s/pr_4.txt}{Q=4}
 		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_8.txt}{Q=8}
 		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_10.txt}{Q=10}
@@ -326,6 +339,7 @@ Initially the effect of changing the histogram quantisation level, $Q$, will be 
 		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_18.txt}{Q=18}
 		\prplotadd{data/grid_text_hist/E_0/9_23_s/pr_20.txt}{Q=20}
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
 	\end{minipage}
 	\caption{Gridded texture histogram results for query image 9\_23\_s, with $E=0$}
@@ -340,6 +354,7 @@ Initially the effect of changing the histogram quantisation level, $Q$, will be 
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
+		\begin{tikzpicture}
 		\prplot{data/grid_text_hist/E_0/13_1_s/pr_4.txt}{Q=4}
 		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_8.txt}{Q=8}
 		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_10.txt}{Q=10}
@@ -348,14 +363,14 @@ Initially the effect of changing the histogram quantisation level, $Q$, will be 
 		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_18.txt}{Q=18}
 		\prplotadd{data/grid_text_hist/E_0/13_1_s/pr_20.txt}{Q=20}
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
 	\end{minipage}
 	\caption{Gridded texture histogram results for query image 13\_1\_s, with $E=0$}
 	\label{fig:grid-text-books}
 \end{figure}
 
-Figure \ref{fig:grid-text-sheep} shows that for the sheep image, there is very little difference in performance with quantisation levels greater than approximately 4. Figure \ref{fig:grid-text-books} shows that the books, on the other hand, performance is dependant on quantisation level. Higher quantisation levels continue to improve performance, up to approximately $Q=16$, after this point performance decreases.
-
+Figure \ref{fig:grid-text-sheep} shows that for the sheep image, there is very little difference in performance with quantisation levels greater than approximately 4. Figure \ref{fig:grid-text-books} shows that for the books, on the other hand, performance is strongly dependant on quantisation level. Higher quantisation levels continue to improve performance, up to approximately $Q=16$, after this point performance decreases.
 
 \begin{figure}[ht]
 	\begin{minipage}[]{0.3\linewidth}
@@ -365,6 +380,7 @@ Figure \ref{fig:grid-text-sheep} shows that for the sheep image, there is very l
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
+		\begin{tikzpicture}
 		\prplot{data/grid_text_hist/Q_16/9_23_s/pr_0.txt}{E=0}
 		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_1.txt}{E=0.1}
 		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_2.txt}{E=0.2}
@@ -377,6 +393,7 @@ Figure \ref{fig:grid-text-sheep} shows that for the sheep image, there is very l
 		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_9.txt}{E=0.9}
 %		\prplotadd{data/grid_text_hist/Q_16/9_23_s/pr_10.txt}{E=1.0}
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
 	\end{minipage}
 	\caption{Gridded texture histogram results for query image 9\_23\_s, with $Q=16$}
@@ -391,6 +408,7 @@ Figure \ref{fig:grid-text-sheep} shows that for the sheep image, there is very l
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
+		\begin{tikzpicture}
 		\prplot{data/grid_text_hist/Q_16/13_1_s/pr_0.txt}{E=0}
 		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_1.txt}{E=0.1}
 		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_2.txt}{E=0.2}
@@ -403,19 +421,20 @@ Figure \ref{fig:grid-text-sheep} shows that for the sheep image, there is very l
 		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_9.txt}{E=0.9}
 %		\prplotadd{data/grid_text_hist/Q_16/13_1_s/pr_10.txt}{E=1.0}
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
 	\end{minipage}
 	\caption{Gridded texture histogram results for query image 13\_1\_s, with $Q=16$}
 	\label{fig:grid-text-books-q16}
 \end{figure}
 
-Figures \ref{fig:grid-text-sheep-q16} and \ref{fig:grid-text-books-q16} show the result of varying $E$, whilst keeping $Q$ at a constant value of $16$. The results are interesting. For the bookshelves, increasing $E$ above zero improves performance up to approximately $E=0.3$, however, for the sheep increasing $E$ above $0$ greatly hinders performance. This is likely due to the face that whilst the books have lots of strong edges (at the edges of the books), which will remain with increasing values of $E$, the sheep image likely lacks these strong edges, and so increasing $E$ removes almost all of the relevant edges from the generated descriptor.
+Figures \ref{fig:grid-text-sheep-q16} and \ref{fig:grid-text-books-q16} show the result of varying $E$, whilst keeping $Q$ at a constant value of $16$. The results are interesting. For the bookshelves, increasing $E$ above $0$ improves performance up to approximately $E=0.3$, however, for the sheep increasing $E$ above $0$ greatly hinders performance. This is likely due to the fact that whilst the books have lots of strong edges (at the edges of the books), which will remain with increasing values of $E$, the sheep image likely lacks these strong edges, and so increasing $E$ removes almost all of the relevant edges from the generated descriptor.
 
 \FloatBarrier
 \section{Concatenation of Descriptors} \label{sec:conc-desc-results}
-Sections \ref{sec:gridding-results} and \ref{sec:texture-histogram-results} demonstrate the effectiveness of gridded colour histogram and texture descriptors. It stands to reason therefore that these descriptors could be combined to produce a descriptor of even greater effectiveness. This is possible in matlab using the native array indexing interface, but it is clearer to use the \texttt{horzcat} function.
+Sections \ref{sec:gridding-results} and \ref{sec:texture-histogram-results} demonstrate the effectiveness of gridded colour histogram and texture descriptors. It stands to reason therefore that these descriptors could be combined to produce a descriptor of even greater effectiveness. This is possible using the methodology described in Section \ref{sec:conc-desc}.
 
-A combined descriptor can therefore be invoked using the function handle \texttt{@(x)horzcat( texture\_func(x) .* M, color\_func(x))} where \texttt{texture\_func(x)} and \texttt{color\_func(x)} are function handles to the texture and colour descriptor functions respectively, where their single parameter, \texttt{x} is the input image. The only other parameter in this function is \texttt{M}. \texttt{M} is a multiplier in order to adjust the weighting between the texture and colour descriptors. When \texttt{M} is $1$ the two descriptors are equally weighted, however since the colour descriptor is 4 times as long as the texture descriptor (a 64 bin histogram, vs and 8 bit histogram), it is effectively weighted more highly since there are many more dimensions in which values can be distant. Whilst weighting of $M=4$ should therefore make up for this difference in descriptor length, a different value may provide better results.
+In order to combine the gridded texture and gridded global colour histogram results, the parameters of these functions which were found to be optimal in Sections \ref{sec:gridding-results} and \ref{sec:texture-histogram-results} will be used. The only free parameter of the concatenation function is therefore $M$. $M$ is a multiplier that is applied to the texture function in order to adjust the weighting between the texture and colour descriptors. When $M$ is $1$ the two descriptors are equally weighted, however since the colour descriptor is 4 times as long as the texture descriptor (a 64 bin histogram, vs and 8 bin histogram), it is effectively weighted more highly since there are many more dimensions in which values can be distant. Whilst weighting of $M=4$ should therefore make up for this difference in descriptor length, a different value may provide better results.
 
 \begin{figure}[ht]
 	\begin{minipage}[]{0.3\linewidth}
@@ -425,12 +444,14 @@ A combined descriptor can therefore be invoked using the function handle \texttt
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
+		\begin{tikzpicture}
 		\prplot{data/grid_text_hist/Q_16/9_23_s/pr_0.txt}{Texture only}
 		\prplotadd{data/gridding/color_hist/9_23_s/pr_2.txt}{Colour only}
 		\prplotadd{data/concat/9_23_s/pr_1.txt}{W = 1}
 		\prplotadd{data/concat/9_23_s/pr_4.txt}{W = 4}
 		\prplotadd{data/concat/9_23_s/pr_10.txt}{W = 10}
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
 	\end{minipage}
 	\caption{Concatenated descriptor results for query image 9\_23\_s}
@@ -445,12 +466,14 @@ A combined descriptor can therefore be invoked using the function handle \texttt
 	\end{minipage}
 	\begin{minipage}[]{0.7\linewidth}
 		\centering
+		\begin{tikzpicture}
 		\prplot{data/grid_text_hist/Q_16/13_1_s/pr_0.txt}{Texture only}
 		\prplotadd{data/gridding/color_hist/13_1_s/pr_2.txt}{Colour only}
 		\prplotadd{data/concat/13_1_s/pr_1.txt}{W = 1}
 		\prplotadd{data/concat/13_1_s/pr_4.txt}{W = 4}
 		\prplotadd{data/concat/13_1_s/pr_10.txt}{W = 10}
 		\prplotclose
+		\end{tikzpicture}
 		\subcaption{Resultant graph}
 	\end{minipage}
 	\caption{Concatenated descriptor results for query image 13\_1\_s}
@@ -459,6 +482,96 @@ A combined descriptor can therefore be invoked using the function handle \texttt
 
 Figure \ref{fig:concat-sheep} shows that the concatenated descriptor remains very close to the plot of only the RGB histogram for all values of $W$ plotted. This implies that all of the descriptors are very close in the texture plot, leading to the colour plot dominating the results.
 
-Figure \ref{fig:concat-books} on the other hand shows that the concatenated descriptor does vary between the two plots with differing values of $W$. This implies that both descriptors have a large amount of differentiation. The results show that a value of $W=1$, the results are close to the RGB histogram, but at $W=10$, the results are closer to the edge orientation histogram. A value of $W=4$ provides a compromise between the two as expected. The results are poorer than the RGB histogram only for this particular query image, but this is unlikely to hold true for all query images since some images will likely be described by colour well, and others by texture well.
+Figure \ref{fig:concat-books} on the other hand shows that the concatenated descriptor does vary between the two plots with differing values of $W$. This implies that both descriptors are discriminative. The results show that at a value of $W=1$, the results are close to the RGB histogram, but at $W=10$, the results are closer to the edge orientation histogram. A value of $W=4$ provides a compromise between the two as expected. The results are poorer than the RGB histogram for this particular query image, but this is unlikely to hold true for all query images since some images will likely be described by colour well, and others by texture well.
+
+\section{Overall Results} \label{sec:overall-results}
+
+Following the characterisation each algorithm, discussed in the previous parts of this section, it has been possible to test the performance of each descriptor against the entire database of images. This is achieved by calculating \gls{map}. \gls{map} is a single numeric measure for determining the performance of a descriptor across a dataset. Is is the mean of \gls{ap}, which is defined in Equation \ref{eq:map}. In this equation P$(i)$ represents the precision at that value of $i$, and Rel$(i)$ is $1$ if the result is relevant, or $0$ if it is not.
+
+\begin{equation}
+\text{\glsentryshort{ap}} = \frac{\sum_{i=1}^{n} \left( \text{P}(i) \times \text{Rel}(i) \right) }{\sum_{i=1}^{n}  \text{Rel}(i) } \label{eq:map}
+\end{equation}
+
+Table \ref{tbl:map-stats} tabulates the \gls{map} statistics for all images in the dataset, both within each category, as well as globally. These results show \gls{map} across the entire dataset, so a lot of the numbers are low. The reason for this is that whilst the images have similar Level 2 content, some of the images are very different in terms of colour and texture content. In order to account for this, Table \ref{tbl:map-stats-at-10} tabulates \gls{map} statistics for the first 10 relevant recalled images. This data removes the effect of the aforementioned `outlier' images in each category, and better demonstrates how well each type of image content responds to each descriptor.
+
+The results in Table \ref{tbl:map-stats-at-10} show that the image sets respond well to some descriptors, and some respond poorly. One example of this is category 4, where the \gls{map} is 0.71 for the edge orientation histogram, but 0.25 and 0.44 for the global colour histogram and gridded global colour histogram. This can be explained by looking at the type of image category 4 is. Category 4 contains images of aeroplanes. Almost all of these images have a smooth aeroplane body in the middle of the image, with a clear sky at the top, and plain grass at the bottom. This distinctive texture signature is what allows this high \gls{ap} figure. Other image sets which respond particularly well to the edge orientation histogram are categories 7 and 13 respectively. Category 7 contains cars, and category 13 books on shelves, both of these have distinct texture signatures.
+
+In general, most of the categories responded better to the gridded colour histogram than the global colour histogram. This is expected since encoding the spatial aspect of the colour data should allow for a more discriminative descriptor. A notable example which does not is category 18. Category 18 is a series of images which all contain water, however the water is in a different location in almost every image, this kind of spatial variance cannot be encoded in the gridded descriptor, so it performs poorly.
+
+Two categories which responded particularly well to the colour descriptor are categories 2 and 13. These are images of trees, mostly on a background of a washed-out sky, and bookshelves of colourful books respectively. Both images likely work well with this descriptor because they contain a variety of colours which are both common across most of the images, and distinctive in the image set itself. 
+
+In general, concatenation of colour and texture descriptors improved performance over the individual descriptors. The cases where they did not are cases where one descriptor had a much greater performance over the other, such as category 4, which responded particularly well to the texture descriptor and category 2 which responded particularly well to the colour descriptors. One example of a category which showed great improvement with descriptor concatenation are categories 7 and 10. These categories contain differently coloured cars in different orientations and differently coloured flowers, with varying shapes. Concatenation helps with the cars because the variance of colour across the set means that the similarly coloured cars strongly match each other in a colour histogram, but all others are distant, whereas all of the cars are likely moderate matches with the edge orientation histogram. The flowers have a similar effect.
+
+One category which performed particularly poorly in all cases is category 16. This category contains photographs of dogs, of various sizes and colours, all taken from different camera angles and on different backgrounds. This is an example of Level 2 concepts which do not translate well at all to Level 1 attempts at interpretation.
+
+
+\begin{table}[ht]
+	\rowcolors{2}{gray!25}{white}
+	\caption{\glsentryshort{map} statistics for all methods and categories}
+	\label{tbl:map-stats}
+	\centering
+	\pgfplotstableset{ % Makes bold a whole row of a table
+		highlightrow/.style={
+			postproc cell content/.append code={
+				\count0=\pgfplotstablerow
+				\advance\count0 by1
+				\ifnum\count0=#1
+				\pgfkeysalso{@cell content/.add={$\bf}{$}}
+				\fi
+			},
+		},
+	}
+	\pgfplotstabletypeset[
+	col sep=comma,
+	string type,
+	columns/set/.style={column name={\textbf{Image category}}, column type={r}},
+	columns/gch/.style={column name={\textbf{\shortstack{Global colour\\histogram}}}, column type={r}},
+	columns/gridch/.style={column name={\textbf{\shortstack{Gridded\\ colour\\histogram}}}, column type={r}},
+	columns/eoh/.style={column name={\textbf{\shortstack{Gridded\\edge orienatation\\histogram}}}, column type={r}},
+	columns/concat/.style={column name={\textbf{\shortstack{Concatenated\\descriptors}}}, column type={r}},
+	every head row/.style={before row=\toprule, after row=\midrule},
+	every last row/.style={after row=\bottomrule},
+	highlightrow={21},
+	]{data/global_stats/map.txt}
+\end{table}
+
+\begin{table}[ht]
+	\rowcolors{2}{gray!25}{white}
+	\caption{\glsentryshort{map} statistics for first 10 images in each set, over all methods and categories}
+	\label{tbl:map-stats-at-10}
+	\centering
+	\pgfplotstableset{ % Makes bold a whole row of a table
+		highlightrow/.style={
+			postproc cell content/.append code={
+				\count0=\pgfplotstablerow
+				\advance\count0 by1
+				\ifnum\count0=#1
+				\pgfkeysalso{@cell content/.add={$\bf}{$}}
+				\fi
+			},
+		},
+	}
+	\pgfplotstabletypeset[
+	col sep=comma,
+	string type,
+	columns/set/.style={column name={\textbf{Image category}}, column type={r}},
+	columns/gch/.style={column name={\textbf{\shortstack{Global colour\\histogram}}}, column type={r}},
+	columns/gridch/.style={column name={\textbf{\shortstack{Gridded\\ colour\\histogram}}}, column type={r}},
+	columns/eoh/.style={column name={\textbf{\shortstack{Gridded\\edge orienatation\\histogram}}}, column type={r}},
+	columns/concat/.style={column name={\textbf{\shortstack{Concatenated\\descriptors}}}, column type={r}},
+	every head row/.style={before row=\toprule, after row=\midrule},
+	every last row/.style={after row=\bottomrule},
+	highlightrow={21},
+	]{data/global_stats/map_at_10.txt}
+\end{table}
 
 \chapter{Conclusion} \label{sec:conclusion}
+This report presents several methods of generating descriptors for images, and uses test data to  set their adjustable parameters, the results of which is presented in Section \ref{sec:results}. The overall results show that the \gls{matlab} system is capable of performing with a reasonable \gls{map} over the first 10 images in each set. However performance does suffer when considered over the whole dataset. Overall the concatenated descriptors perform best over the entire dataset with a \gls{map} of 0.21, or 0.36 if only the first 10 images are considered. A global colour histogram performs most poorly overall with a \gls{map} of 0.16 over the entire dataset, or 0.26 if only the first 10 images are considered.
+
+The Appendices present further results which extend the investigation in areas other than investigation of different descriptors. Appendix \ref{app:pca} investigates \gls{pca} and shows how descriptors can be made much more compact without impact on performance. The investigated descriptor, a gridded colour histogram, was able to be reduced to 26\% of it's original size without noticeable performance impact.
+
+Appendix \ref{app:dist-measures} investigates various distance measures which can be used to compare descriptors and tests their relative performance. The $L_2$ norm, which has been used throughout the remainder of this investigation was found to be the strongest overall performer.
+
+In addition Appendix \ref{app:test-methodology} presents the test methodology for verification of the functionality of the descriptor generation functions.
+
+To conclude the system presented by the report is a modular and extensible visual search system, with characterised performance, and scope to be extended beyond its current functionality. 

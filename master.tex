@@ -11,19 +11,137 @@
 	
 \begin{titlepage}
 	\centering
-	{\huge\bfseries EEE3032 \\ Computer Vision and Pattern Recognition Coursework Assignment \\ Visual Search of an Image Collection \par}
+	{\huge\bfseries EEE3032 \\
+	Computer Vision and Pattern Recognition \\
+	Coursework Assignment \\
+	\vspace{0.5cm}
+	\Huge Visual Search of an Image Collection \par}
 	\vspace{1cm}
 	
-	\huge
-	\begin{itemize}
-		\item Add failure case results in appendix
-		\item Explain theory of P-R graphs
-		\item Confusion matrix
-		\item Explain how our categories are level 2, but algs are level 1
-	\end{itemize}
+\begin{figure}[ht]
+	\begin{minipage}[]{\linewidth}
+		\centering
+		\includegraphics[width = 0.25\linewidth]{figs/msrc/7_10_s}
+		\subcaption{Query Image}
+	\end{minipage}
+	\\
+	\vspace{0.5cm}
+	\\
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_15_s}
+		\subcaption{Result 1}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_11_s}
+		\subcaption{Result 2}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_9_s}
+		\subcaption{Result 3}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_22_s}
+		\subcaption{Result 4}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_13_s}
+		\subcaption{Result 5}
+	\end{minipage}
+	\\
+	\vspace{0.5cm}
+	\\
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_8_s}
+		\subcaption{Result 6}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_6_s}
+		\subcaption{Result 7}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_2_s}
+		\subcaption{Result 8}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_14_s}
+		\subcaption{Result 9}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_20_s}
+		\subcaption{Result 10}
+	\end{minipage}
+	\\
+	\vspace{0.5cm}
+	\\
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/12_9_s}
+		\subcaption{Result 11}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_28_s}
+		\subcaption{Result 12}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_18_s}
+		\subcaption{Result 13}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_17_s}
+		\subcaption{Result 14}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_24_s}
+		\subcaption{Result 15}
+	\end{minipage}
+	\\
+	\vspace{0.5cm}
+	\\
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/18_23_s}
+		\subcaption{Result 16}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_29_s}
+		\subcaption{Result 17}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_19_s}
+		\subcaption{Result 18}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_21_s}
+		\subcaption{Result 19}
+	\end{minipage}
+	\begin{minipage}[]{0.19\linewidth}
+		\centering
+		\includegraphics[width = 0.9\linewidth]{figs/msrc/7_12_s}
+		\subcaption{Result 20}
+	\end{minipage}
+	
+	\caption{Image recall results for concatenated descriptors}
+\end{figure}
 
-	\vspace{2.5cm}
-	{\Large\itshape Joshua Tyler \par}
+	\vspace{0.5cm}
+	{\huge\itshape Joshua Tyler \par}
 	\vfill
 	
 	
@@ -41,7 +159,12 @@
 \let\clearpage\relax
 
 \begin{abstract}
-	Write this at the end!
+	This report presents the results of a visual search system implemented using \glsentryshort{matlab}. The system is built upon a modular framework which allows tests to be run using different descriptors and distance measures.
+	
+	Various distance measures have been evaluated, and results compiled for the entire database of 591 images. It has been found that a concatenated, gridded, texture and colour descriptor produces the best results, in the general case. The performance is however limited to a greater extent by the semantic gap between the low level methods used and the high level information encoded in the images.
+	
+	Additional testing which evaluates different comparison techniques, as well as \glsentrylong{pca} is presented in Appendices. Projection of the descriptors into a lower dimensional space, as well as use of an less computationally expensive comparator could allow for faster image recall in time critical systems.
+	
 \end{abstract}
 
 \vspace{50pt}
@@ -59,7 +182,6 @@
 \clearpage
 \bibliographystyle{IEEEtranN}
 \bibliography{IEEEabrv,refs/references}
-
 
 \input{docs/appendices}
 

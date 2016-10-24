@@ -4,8 +4,7 @@ A MATLAB program which implements various methods of visual search, and provides
 
 This program is intended to use the msrc_v2 image database, downloadable [here](http://research.microsoft.com/en-us/um/people/antcrim/data_objrec/msrc_objcategimagedatabase_v2.zip). Some parts of the program use aspects of this dataset (e.g. the image naming scheme to determine ground truth labels).
 
-[Example output](img/2.jpg "Example output for a given search image")
-<img src="img/2.jpg" alt="Example output for a given search image" width="300">
+<img src="img/2.jpg" alt="Example output for a given search image" width="500" align="middle">
 
 ##How to use
 The simplest way to run the system is to execute visual_search_wrapper.m. This script wraps the main function (vs_visual_search) to allow a single test to be run. visual_search_wrapper is set up to perform any test the system is capable of producing.

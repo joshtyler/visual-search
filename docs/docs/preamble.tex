@@ -1,0 +1,217 @@
+%Page setup
+\documentclass[11pt, a4paper]{report}
+
+\usepackage{geometry}
+\geometry{a4paper, portrait, top=2cm,bottom=2cm, left=2cm, right=2cm}
+
+%Sort out overly-generous chapter spacing
+\usepackage{titlesec}
+\titleformat{\chapter}[hang]
+{\normalfont\huge\bfseries}{ \thechapter}{10pt}{\Huge}
+% Was:[display]{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+\titleformat{\section}
+{\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}
+{\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+\titleformat{\paragraph}[runin]
+{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titleformat{\subparagraph}[runin]
+{\normalfont\normalsize\bfseries}{\thesubparagraph}{1em}{}
+
+\titlespacing*{\chapter} {0pt}{-20pt}{10pt} %Was: {0pt}{50pt}{40pt}. Was -20pt for new page
+\titlespacing*{\section} {0pt}{3.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}
+\titlespacing*{\subsection} {0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\titlespacing*{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+\titlespacing*{\paragraph} {0pt}{3.25ex plus 1ex minus .2ex}{1em}
+\titlespacing*{\subparagraph} {\parindent}{3.25ex plus 1ex minus .2ex}{1em}
+%\titlespacing{command}{left spacing}{before spacing}{after spacing}[right]
+% spacing: how to read {12pt plus 4pt minus 2pt}
+%           12pt is what we would like the spacing to be
+%           plus 4pt means that TeX can stretch it by at most 4pt
+%           minus 2pt means that TeX can shrink it by at most 2pt
+%       This is one example of the concept of, 'glue', in TeX
+
+%Remove chapter space in list of figures and tables
+\usepackage{etoolbox}% http://ctan.org/pkg/etoolbox
+\makeatletter
+% \patchcmd{<cmd>}{<search>}{<replace>}{<succes>}{<failure>}
+\patchcmd{\@chapter}{\addtocontents{lof}{\protect\addvspace{10\p@}}}{}{}{}% LoF
+\patchcmd{\@chapter}{\addtocontents{lot}{\protect\addvspace{10\p@}}}{}{}{}% LoT
+\makeatother
+
+%Remove new page break for chapters
+%\makeatletter
+%\patchcmd{\chapter}{\if@openright\cleardoublepage\else\clearpage\fi}{}{}{}
+%\makeatother
+
+%Spec says 11pt Arial;
+\usepackage{fontspec}
+\setmainfont{Arial}
+%\usepackage{mathspec}
+%\setmathsfont(Digits)[Numbers={Lining,Proportional}]{Arial}
+%\setmathsfont(Latin)[Numbers={Lining,Proportional}]{Arial}
+%\setmathsfont(Greek)[Numbers={Lining,Proportional}]{Arial}
+
+%\usepackage[math-style=upright]{unicode-math}
+%\setmathfont{Arial}
+%\setmathfont[range={\sqrt,\int}]{XITS Math}
+
+%For checking font size
+\makeatletter
+\newcommand\thefontsize[1]{{#1 The current font size is: \f@size pt\par}}
+\makeatother
+
+
+
+% Natbib references
+\usepackage[numbers]{natbib}
+
+% Hyperref:
+% This package makes all references within your document clickable. By default, these references will become boxed and colored. This is turned back to normal with the \hypersetup command below.
+\usepackage[pdfpagelabels]{hyperref} %pdfpagelabels allows page numbers such as i and ii in pdf reader
+\hypersetup{colorlinks=false,pdfborder=0 0 0}
+
+\usepackage{etoolbox} %Let's let bibliography be ragged right to avoid typesetting problems
+\apptocmd{\thebibliography}{\raggedright}{}{}
+
+%Colour
+\usepackage[dvipsnames, table]{xcolor}
+
+%Appendix Handling
+\usepackage[titletoc,title]{appendix}
+
+%Acronyms!
+\usepackage[nonumberlist, acronyms, toc,]{glossaries}
+\setacronymstyle{long-short}
+\renewcommand{\glsgroupskip}{} %Don't put a small space between groups
+\input{docs/acronyms} %Import list of acronyms
+
+%Display long multiplication
+\usepackage{xlop}
+
+%Mathematical symbols
+\usepackage{amssymb}
+\usepackage{amsmath}
+\DeclareMathOperator{\atantwo}{atan2}
+
+%Posh enumeration
+\usepackage{enumitem}
+\setlist[enumerate]{nosep} %No special separation for enumerated lists
+\setlist[itemize]{nosep}
+
+
+%SI representations
+\usepackage{siunitx}
+
+%Drawing
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, shapes.misc, arrows}
+\usetikzlibrary{calc}
+\usetikzlibrary{positioning}
+\usetikzlibrary{patterns}
+\usetikzlibrary{automata}
+\usepackage{tikz-3dplot}
+
+%Pretty plots
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+% We have some pretty big data sets, so lets use the externalise feature
+% See http://tex.stackexchange.com/questions/7953/how-to-expand-texs-main-memory-size-pgfplots-memory-overload
+%\usepgfplotslibrary{external} 
+%\tikzexternalize[shell escape=-enable-write18, up to date check=diff]
+
+% Pretty tables 
+\usepackage{booktabs}
+
+% Caption. For better looking captions the captions.
+\usepackage{caption}
+\usepackage{subcaption}
+
+%Timing diagrams
+\usepackage{tikz-timing}[2011/01/09]
+
+%Listings
+\usepackage{listings,chngcntr}
+% set the default code style
+\lstset{
+	frame=tb, % draw a frame at the top and bottom of the code block
+	tabsize=4, % tab space width
+	breaklines=true, %Wrap text
+	showstringspaces=false, % don't mark spaces in strings
+	numbers=left, % display line numbers on the left
+	commentstyle=\color{ForestGreen}, % comment color
+	keywordstyle=\color{blue}, % keyword color
+	stringstyle=\color{red}, % string color
+	basicstyle=\small %normal font size
+}
+%Make heading say "list of listings", not just "listings"
+\renewcommand\lstlistlistingname{List of Listings}
+
+
+%Allow easy typesetting of SI units
+\usepackage{siunitx}
+
+%Allow floatbarrier
+\usepackage{placeins}
+
+
+%Tables from csv
+\usepackage{pgfplotstable}
+
+
+%Custom commands
+
+%Create new P-R plot
+\newcommand{\prplot}[2]
+{
+	\pgfplotsset{every axis/.append style={
+			line width=1pt,
+			tick style={line width=0.8pt}}}
+	\begin{axis}[
+	xlabel=Recall,
+	ylabel=Precision,
+	%
+	ymin =0, ymax = 1.05,
+	xmin =0, xmax = 1.05,
+	axis lines=left, % Don't put lines on right and top
+	%
+	width=0.9\columnwidth,
+	height = 0.6\columnwidth,
+	%
+	xtick={0,0.1,...,1.1},
+	xmajorgrids=true,
+	ytick={0,0.1,...,1.1},
+	ymajorgrids=true,
+	cycle list name=exotic,
+	legend style ={anchor=north east,legend cell align=left,at={(1,1)}},
+	mark size=1.75pt,
+	]
+	
+	%Note: pure chance precision will be for  plot 1 only
+	\addplot+[mark=none]
+	table[ x=recall, y=chance_precision, col sep=comma] {#1};
+	\addlegendentry{\shortstack[l]{Chance}};
+	
+	\addplot
+	table[ x=recall, y=precision, col sep=comma] {#1};
+	\addlegendentry{#2};
+	
+	
+
+}
+
+%Add series to P-R plot
+\newcommand{\prplotadd}[2]
+{
+	\addplot
+	table[ x=recall, y=precision, col sep=comma] {#1};
+	\addlegendentry{#2};
+}
+
+%Finish P-R Plot
+\newcommand{\prplotclose}
+{
+	\end{axis}	
+}
